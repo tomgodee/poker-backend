@@ -1,0 +1,52 @@
+{
+  "name": "poker-backend",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "start": "npm run prod",
+    "app": "node -r dotenv/config ./dist-app/bin/www.js",
+    "clean": "rimraf dist-app",
+    "transpile": "babel ./app --out-dir dist-app",
+    "build": "npm run clean && npm run transpile",
+    "dev": "NODE_ENV=development npm-run-all build app",
+    "prod": "NODE_ENV=production npm run build && npm run app",
+    "watch:dev": "nodemon"
+  },
+  "dependencies": {
+    "@babel/cli": "^7.14.3",
+    "@babel/core": "^7.14.3",
+    "@babel/preset-env": "^7.14.4",
+    "cookie-parser": "~1.4.4",
+    "debug": "~2.6.9",
+    "dotenv": "^10.0.0",
+    "express": "~4.16.1",
+    "jsonwebtoken": "^8.5.1",
+    "lodash": "^4.17.21",
+    "moment": "^2.29.1",
+    "morgan": "~1.9.1",
+    "pg-promise": "^10.10.2",
+    "rimraf": "^3.0.2",
+    "sequelize": "^6.6.2"
+  },
+  "devDependencies": {
+    "nodemon": "^2.0.7",
+    "npm-run-all": "^4.1.5"
+  },
+  "babel": {
+    "presets": [
+      "@babel/preset-env"
+    ]
+  },
+  "nodemonConfig": {
+    "delay": 1000,
+    "exec": "npm run dev",
+    "watch": [
+      "app/*"
+    ],
+    "ignore": [
+      "**/__tests__/**",
+      "*.test.js",
+      "*.spec.js"
+    ]
+  }
+}
