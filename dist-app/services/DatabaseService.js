@@ -1,14 +1,14 @@
 "use strict";
 
-var db = pgp()('postgres://postgres:zxc321@localhost:5432/tom');
-db.one('SELECT $1 AS name', 'tom').then(function (data) {
-  console.log('DATA:', data);
-  console.log('env2', process.env.NAME);
-})["catch"](function (error) {
-  console.log('ERROR:', error);
+Object.defineProperty(exports, "__esModule", {
+  value: true
 });
+exports.default = void 0;
 
-var requestTime = function requestTime(req, res, next) {
-  req.requestTime = Date.now();
-  next();
-};
+var _pgPromise = _interopRequireDefault(require("pg-promise"));
+
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
+
+var db = (0, _pgPromise.default)()('postgres://postgres:zxc321@localhost:5432/tom');
+var _default = db;
+exports.default = _default;

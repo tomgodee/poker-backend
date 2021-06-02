@@ -6,12 +6,6 @@ import requestTime from './middlewares/requestTime';
 import userRouter from './routes/user/UserRouter';
 import pingRouter from './routes/ping/PingRouter';
 
-// var pgp = require('pg-promise')(/* options */)
-import pgp from 'pg-promise';
-var db = pgp()('postgres://postgres:zxc321@localhost:5432/tom')
-
-import pingHandler from './routes/ping';
-
 var app = express();
 
 app.use(logger('dev'));
