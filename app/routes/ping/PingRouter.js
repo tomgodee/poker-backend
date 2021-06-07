@@ -3,7 +3,10 @@ import express from 'express';
 const pingRouter = express.Router();
 
 pingRouter.get('/', (req, res) => {
-  res.send(`pong at ${req.requestTime}`);
+  res.json({
+    message: 'pong',
+    requestTime: req.requestTime,
+  });
 });
 
 export default pingRouter;

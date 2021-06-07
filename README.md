@@ -1,3 +1,6 @@
+To run:
+  - npm run watch:dev
+
 On how to install postgres and pgadmin:
   - https://www.youtube.com/watch?v=lX9uMCSqqko
 

@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'path';
+import cors from './middlewares/cors';
 import cookieParser from 'cookie-parser';
 import logger from 'morgan';
 import requestTime from './middlewares/requestTime';
@@ -8,11 +9,20 @@ import pingRouter from './routes/ping/PingRouter';
 
 var app = express();
 
+// Default middlewares
 app.use(logger('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(cookieParser());
 
+// Library middlewares
+app.use(cors);
+
+// enable pre-flight request 
+// TODO: app.use(cors) might solve this already so might need to check this in the future to see if we need this line
+app.options('/', cors);
+
+// Hand-written middlewares
 app.use(requestTime)
 
 app.get('/', function (req, res) {

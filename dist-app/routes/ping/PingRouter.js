@@ -12,7 +12,10 @@ function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { de
 var pingRouter = _express.default.Router();
 
 pingRouter.get('/', function (req, res) {
-  res.send("pong at ".concat(req.requestTime));
+  res.json({
+    message: 'pong',
+    requestTime: req.requestTime
+  });
 });
 var _default = pingRouter;
 exports.default = _default;

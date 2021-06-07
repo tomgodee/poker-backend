@@ -7,9 +7,9 @@ exports.default = void 0;
 
 require("regenerator-runtime/runtime.js");
 
-require("core-js/modules/es.function.name.js");
-
 require("core-js/modules/es.object.assign.js");
+
+require("core-js/modules/es.function.name.js");
 
 require("core-js/modules/es.object.to-string.js");
 
@@ -47,7 +47,7 @@ userRouter.post('/login', /*#__PURE__*/function () {
         switch (_context.prev = _context.next) {
           case 0:
             _context.next = 2;
-            return _User.default.getUser(req.body.name);
+            return _User.default.getUser(req.body.username);
 
           case 2:
             user = _context.sent;
@@ -55,13 +55,13 @@ userRouter.post('/login', /*#__PURE__*/function () {
             _bcrypt.default.compare(req.body.password, user.hashed_password, function (err, result) {
               if (result) {
                 var token = generateAccessToken({
-                  name: req.body.name
+                  username: req.body.username
                 });
                 res.json(Object.assign(user, {
                   accessToken: token
                 }));
               } else {
-                res.json({
+                res.send(401, {
                   status: 'error',
                   message: 'Can\'t authenticate'
                 });

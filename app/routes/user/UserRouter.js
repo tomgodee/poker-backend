@@ -11,15 +11,15 @@ const generateAccessToken = (userInfo) => {
 }
 
 userRouter.post('/login', async (req, res) => {
-  const user = await UserModel.getUser(req.body.name);
+  const user = await UserModel.getUser(req.body.username);
   bcrypt.compare(req.body.password, user.hashed_password, function(err, result) {
     if (result) {
       const token = generateAccessToken({
-        name: req.body.name
+        username: req.body.username,
       });
       res.json(Object.assign(user, { accessToken: token }));
     } else {
-      res.json({
+      res.send(401, {
         status: 'error',
         message: 'Can\'t authenticate',
       });
