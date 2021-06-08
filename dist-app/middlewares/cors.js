@@ -16,8 +16,8 @@ var corsOptionsDelegate = function corsOptionsDelegate(req, callback) {
 
   if (allowlist.indexOf(req.header('Origin')) !== -1) {
     corsOptions = {
-      origin: true
-    }; // reflect (enable) the requested origin in the CORS response
+      origin: allowlist
+    };
   } else {
     corsOptions = {
       origin: false

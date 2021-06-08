@@ -7,7 +7,7 @@ import UserModel from '../../models/User';
 const userRouter = express.Router();
 
 const generateAccessToken = (userInfo) => {
-  return jwt.sign(userInfo, process.env.TOKEN_SECRET, { expiresIn: '1800s' });
+  return jwt.sign(userInfo, process.env.TOKEN_SECRET, { expiresIn: '1d' });
 }
 
 userRouter.post('/login', async (req, res) => {
@@ -28,9 +28,17 @@ userRouter.post('/login', async (req, res) => {
 });
 
 userRouter.get('/', (req, res) => {
-  res.json({
-    user: 'tom',
-    requestTime: req.requestTime,
+  const accessToken = req.headers.authorization.split('Bearer ')[1];
+  jwt.verify(accessToken, process.env.TOKEN_SECRET, async (err, decoded) => {
+    if (decoded) {
+      const user = await UserModel.getUser(decoded.username);
+      res.json(Object.assign(user, { requestTime: req.requestTime, }));
+    } else if (err) {
+      res.send(401, {
+        status: 'error',
+        message: 'Token is not verified',
+      });
+    }
   });
 });
 
@@ -46,7 +54,5 @@ userRouter.post('/', (req, res) => {
   });
   res.json(req.body.name);
 });
-
-
 
 export default userRouter;

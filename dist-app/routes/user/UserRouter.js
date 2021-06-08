@@ -9,6 +9,10 @@ require("regenerator-runtime/runtime.js");
 
 require("core-js/modules/es.object.assign.js");
 
+require("core-js/modules/es.regexp.exec.js");
+
+require("core-js/modules/es.string.split.js");
+
 require("core-js/modules/es.function.name.js");
 
 require("core-js/modules/es.object.to-string.js");
@@ -35,7 +39,7 @@ var userRouter = _express.default.Router();
 
 var generateAccessToken = function generateAccessToken(userInfo) {
   return _jsonwebtoken.default.sign(userInfo, process.env.TOKEN_SECRET, {
-    expiresIn: '1800s'
+    expiresIn: '1d'
   });
 };
 
@@ -81,10 +85,51 @@ userRouter.post('/login', /*#__PURE__*/function () {
   };
 }());
 userRouter.get('/', function (req, res) {
-  res.json({
-    user: 'tom',
-    requestTime: req.requestTime
-  });
+  var accessToken = req.headers.authorization.split('Bearer ')[1];
+
+  _jsonwebtoken.default.verify(accessToken, process.env.TOKEN_SECRET, /*#__PURE__*/function () {
+    var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2(err, decoded) {
+      var user;
+      return regeneratorRuntime.wrap(function _callee2$(_context2) {
+        while (1) {
+          switch (_context2.prev = _context2.next) {
+            case 0:
+              if (!decoded) {
+                _context2.next = 7;
+                break;
+              }
+
+              _context2.next = 3;
+              return _User.default.getUser(decoded.username);
+
+            case 3:
+              user = _context2.sent;
+              res.json(Object.assign(user, {
+                requestTime: req.requestTime
+              }));
+              _context2.next = 8;
+              break;
+
+            case 7:
+              if (err) {
+                res.send(401, {
+                  status: 'error',
+                  message: 'Token is not verified'
+                });
+              }
+
+            case 8:
+            case "end":
+              return _context2.stop();
+          }
+        }
+      }, _callee2);
+    }));
+
+    return function (_x3, _x4) {
+      return _ref2.apply(this, arguments);
+    };
+  }());
 });
 userRouter.put('/', function (req, res) {
   _User.default.updateUser(req.body.id, req.body.name, req.body.money);
