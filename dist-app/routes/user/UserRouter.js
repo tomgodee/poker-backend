@@ -65,7 +65,7 @@ userRouter.post('/login', /*#__PURE__*/function () {
                   accessToken: token
                 }));
               } else {
-                res.send(401, {
+                res.status(401).send({
                   status: 'error',
                   message: 'Can\'t authenticate'
                 });
@@ -112,7 +112,7 @@ userRouter.get('/', function (req, res) {
 
             case 7:
               if (err) {
-                res.send(401, {
+                res.status(401).send({
                   status: 'error',
                   message: 'Token is not verified'
                 });

@@ -69,3 +69,5 @@ To automatically update a field of a row:
 
 To use async/await syntax with babel v7:
   - https://stackoverflow.com/questions/53558916/babel-7-referenceerror-regeneratorruntime-is-not-defined
+
+Primary key should be serial => how to alter an integer column to serial tho ???

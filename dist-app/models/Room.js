@@ -19,15 +19,15 @@ function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try
 
 function _asyncToGenerator(fn) { return function () { var self = this, args = arguments; return new Promise(function (resolve, reject) { var gen = fn.apply(self, args); function _next(value) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "next", value); } function _throw(err) { asyncGeneratorStep(gen, resolve, reject, _next, _throw, "throw", err); } _next(undefined); }); }; }
 
-var getUser = /*#__PURE__*/function () {
-  var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(name) {
+var getRoom = /*#__PURE__*/function () {
+  var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(id) {
     return regeneratorRuntime.wrap(function _callee$(_context) {
       while (1) {
         switch (_context.prev = _context.next) {
           case 0:
             _context.next = 2;
-            return _DatabaseService.default.one("SELECT * FROM public.user WHERE name = $(name)", {
-              name: name
+            return _DatabaseService.default.one("SELECT * FROM public.room WHERE id = $(id)", {
+              id: id
             }).then(function (data) {
               return data;
             }).catch(function (error) {
@@ -48,26 +48,56 @@ var getUser = /*#__PURE__*/function () {
     }, _callee);
   }));
 
-  return function getUser(_x) {
+  return function getRoom(_x) {
     return _ref.apply(this, arguments);
   };
 }();
 
-var createUser = function createUser(name, hashedPassword) {
-  return _DatabaseService.default.one('INSERT INTO public.user(name, hashed_password) VALUES($1, $2) RETURNING id', [name, hashedPassword]).then(function (data) {
+var getAllRoom = /*#__PURE__*/function () {
+  var _ref2 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee2() {
+    return regeneratorRuntime.wrap(function _callee2$(_context2) {
+      while (1) {
+        switch (_context2.prev = _context2.next) {
+          case 0:
+            _context2.next = 2;
+            return _DatabaseService.default.many("SELECT * FROM public.room").then(function (data) {
+              return data;
+            }).catch(function (error) {
+              console.log('ERROR:', error); // print error;
+
+              // print error;
+              return error;
+            });
+
+          case 2:
+            return _context2.abrupt("return", _context2.sent);
+
+          case 3:
+          case "end":
+            return _context2.stop();
+        }
+      }
+    }, _callee2);
+  }));
+
+  return function getAllRoom() {
+    return _ref2.apply(this, arguments);
+  };
+}();
+
+var createRoom = function createRoom(roomData) {
+  return _DatabaseService.default.one("\n    INSERT INTO public.room(type, max_number_of_player, random_seat, seat_selectable)\n    VALUES($1, $2, $3, $4)\n    RETURNING id", [roomData.type, roomData.max_number_of_player, roomData.random_seat, roomData.seat_selectable]).then(function (data) {
     return data;
   }).catch(function (error) {
-    console.log('ERROR:', error); // print error;
+    console.log('ERROR:', error);
   });
 };
 
-var updateUser = function updateUser(id, name, money) {
-  return _DatabaseService.default.one("UPDATE public.user\n          SET name = $(name),\n              money = $(money)\n          WHERE id = $(id)\n          RETURNING name, id, money", {
-    name: name,
+var updateRoom = function updateRoom(id, roomData) {
+  return _DatabaseService.default.one("UPDATE public.room\n          SET type = $(type)\n          WHERE id = $(id)\n          RETURNING *", {
     id: id,
-    money: money
+    type: roomData.type
   }).then(function (data) {
-    console.log(data);
     return data;
   }).catch(function (error) {
     console.log('ERROR:', error);
@@ -75,8 +105,9 @@ var updateUser = function updateUser(id, name, money) {
 };
 
 var _default = {
-  getUser: getUser,
-  createUser: createUser,
-  updateUser: updateUser
+  getRoom: getRoom,
+  getAllRoom: getAllRoom,
+  createRoom: createRoom,
+  updateRoom: updateRoom
 };
 exports.default = _default;

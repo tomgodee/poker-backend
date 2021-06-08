@@ -12,9 +12,9 @@ const getUser = async (name) => {
 }
 
 const createUser = (name, hashedPassword) => {
-  db.one('INSERT INTO public.user(name, hashed_password) VALUES($1, $2) RETURNING id', [name, hashedPassword])
+  return db.one('INSERT INTO public.user(name, hashed_password) VALUES($1, $2) RETURNING id', [name, hashedPassword])
     .then(data => {
-      console.log(data.id); // print new user id;
+      return data;
     })
     .catch(error => {
       console.log('ERROR:', error); // print error;
@@ -22,7 +22,7 @@ const createUser = (name, hashedPassword) => {
 }
 
 const updateUser = (id, name, money) => {
-  db.one(`UPDATE public.user
+  return db.one(`UPDATE public.user
           SET name = $(name),
               money = $(money)
           WHERE id = $(id)
@@ -30,6 +30,7 @@ const updateUser = (id, name, money) => {
     , { name, id, money })
     .then(data => {
       console.log(data);
+      return data;
     })
     .catch(error => {
       console.log('ERROR:', error);

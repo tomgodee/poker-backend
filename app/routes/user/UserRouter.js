@@ -19,7 +19,7 @@ userRouter.post('/login', async (req, res) => {
       });
       res.json(Object.assign(user, { accessToken: token }));
     } else {
-      res.send(401, {
+      res.status(401).send({
         status: 'error',
         message: 'Can\'t authenticate',
       });
@@ -34,7 +34,7 @@ userRouter.get('/', (req, res) => {
       const user = await UserModel.getUser(decoded.username);
       res.json(Object.assign(user, { requestTime: req.requestTime, }));
     } else if (err) {
-      res.send(401, {
+      res.status(401).send({
         status: 'error',
         message: 'Token is not verified',
       });

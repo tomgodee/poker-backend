@@ -21,6 +21,8 @@ var _UserRouter = _interopRequireDefault(require("./routes/user/UserRouter"));
 
 var _PingRouter = _interopRequireDefault(require("./routes/ping/PingRouter"));
 
+var _room = _interopRequireDefault(require("./routes/room"));
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 var app = (0, _express.default)(); // Default middlewares
@@ -45,5 +47,6 @@ app.get('/', function (req, res) {
 });
 app.use('/ping', _PingRouter.default);
 app.use('/user', _UserRouter.default);
+app.use('/room', _room.default);
 var _default = app;
 exports.default = _default;

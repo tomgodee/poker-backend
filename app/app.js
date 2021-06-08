@@ -6,6 +6,7 @@ import logger from 'morgan';
 import requestTime from './middlewares/requestTime';
 import userRouter from './routes/user/UserRouter';
 import pingRouter from './routes/ping/PingRouter';
+import roomRouter from './routes/room';
 
 var app = express();
 
@@ -33,5 +34,6 @@ app.get('/', function (req, res) {
 
 app.use('/ping', pingRouter);
 app.use('/user', userRouter);
+app.use('/room', roomRouter);
 
 export default app;
