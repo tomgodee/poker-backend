@@ -14,6 +14,7 @@ roomRouter.post('/', async (req, res) => {
     });
 
     res.json({
+      status: 'success',
       id: roomId,
     });
   } catch (err) {
@@ -30,6 +31,7 @@ roomRouter.get('/:id', async(req, res) => {
     const room = await RoomModel.getRoom(req.params.id);
 
     res.json({
+      status: 'success',
       room,
     });
   } catch (err) {
@@ -46,6 +48,7 @@ roomRouter.get('/', async(req, res) => {
     const rooms = await RoomModel.getAllRoom();
 
     res.json({
+      status: 'success',
       rooms,
     });
   } catch (err) {
@@ -62,9 +65,26 @@ roomRouter.put('/:id', async (req, res) => {
     const room = await RoomModel.updateRoom(req.params.id, {
       type: req.body.type
     });
-    console.log('room', room);
 
     res.status(200).json({
+      status: 'success',
+      room,
+    });
+  } catch (err) {
+    console.log('ERROR: ', err);
+    res.status(401).send({
+      status: 'error',
+      message: err,
+    });
+  }
+});
+
+roomRouter.delete('/:id', async (req, res) => {
+  try {
+    const room = await RoomModel.deleteRoom(req.params.id);
+
+    res.status(200).json({
+      status: 'success',
       room,
     });
   } catch (err) {

@@ -104,10 +104,21 @@ var updateRoom = function updateRoom(id, roomData) {
   });
 };
 
+var deleteRoom = function deleteRoom(id) {
+  return _DatabaseService.default.one("DELETE FROM public.room\n          WHERE id = $(id)\n          RETURNING *", {
+    id: id
+  }).then(function (data) {
+    return data;
+  }).catch(function (error) {
+    console.log('ERROR:', error);
+  });
+};
+
 var _default = {
   getRoom: getRoom,
   getAllRoom: getAllRoom,
   createRoom: createRoom,
-  updateRoom: updateRoom
+  updateRoom: updateRoom,
+  deleteRoom: deleteRoom
 };
 exports.default = _default;

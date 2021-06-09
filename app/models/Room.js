@@ -58,9 +58,23 @@ const updateRoom = (id, roomData) => {
     });
 }
 
+const deleteRoom = (id) => {
+  return db.one(`DELETE FROM public.room
+          WHERE id = $(id)
+          RETURNING *`
+    , { id })
+    .then(data => {
+      return data;
+    })
+    .catch(error => {
+      console.log('ERROR:', error);
+    });
+}
+
 export default {
   getRoom,
   getAllRoom,
   createRoom,
   updateRoom,
+  deleteRoom,
 };

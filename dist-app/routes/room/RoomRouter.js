@@ -42,6 +42,7 @@ roomRouter.post('/', /*#__PURE__*/function () {
           case 3:
             roomId = _context.sent;
             res.json({
+              status: 'success',
               id: roomId
             });
             _context.next = 11;
@@ -82,6 +83,7 @@ roomRouter.get('/:id', /*#__PURE__*/function () {
           case 3:
             room = _context2.sent;
             res.json({
+              status: 'success',
               room: room
             });
             _context2.next = 11;
@@ -122,6 +124,7 @@ roomRouter.get('/', /*#__PURE__*/function () {
           case 3:
             rooms = _context3.sent;
             res.json({
+              status: 'success',
               rooms: rooms
             });
             _context3.next = 11;
@@ -163,15 +166,15 @@ roomRouter.put('/:id', /*#__PURE__*/function () {
 
           case 3:
             room = _context4.sent;
-            console.log('room', room);
             res.status(200).json({
+              status: 'success',
               room: room
             });
-            _context4.next = 12;
+            _context4.next = 11;
             break;
 
-          case 8:
-            _context4.prev = 8;
+          case 7:
+            _context4.prev = 7;
             _context4.t0 = _context4["catch"](0);
             console.log('ERROR: ', _context4.t0);
             res.status(401).send({
@@ -179,16 +182,57 @@ roomRouter.put('/:id', /*#__PURE__*/function () {
               message: _context4.t0
             });
 
-          case 12:
+          case 11:
           case "end":
             return _context4.stop();
         }
       }
-    }, _callee4, null, [[0, 8]]);
+    }, _callee4, null, [[0, 7]]);
   }));
 
   return function (_x7, _x8) {
     return _ref4.apply(this, arguments);
+  };
+}());
+roomRouter.delete('/:id', /*#__PURE__*/function () {
+  var _ref5 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(req, res) {
+    var room;
+    return regeneratorRuntime.wrap(function _callee5$(_context5) {
+      while (1) {
+        switch (_context5.prev = _context5.next) {
+          case 0:
+            _context5.prev = 0;
+            _context5.next = 3;
+            return _Room.default.deleteRoom(req.params.id);
+
+          case 3:
+            room = _context5.sent;
+            res.status(200).json({
+              status: 'success',
+              room: room
+            });
+            _context5.next = 11;
+            break;
+
+          case 7:
+            _context5.prev = 7;
+            _context5.t0 = _context5["catch"](0);
+            console.log('ERROR: ', _context5.t0);
+            res.status(401).send({
+              status: 'error',
+              message: _context5.t0
+            });
+
+          case 11:
+          case "end":
+            return _context5.stop();
+        }
+      }
+    }, _callee5, null, [[0, 7]]);
+  }));
+
+  return function (_x9, _x10) {
+    return _ref5.apply(this, arguments);
   };
 }());
 var _default = roomRouter;
