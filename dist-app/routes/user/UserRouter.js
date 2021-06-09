@@ -29,6 +29,8 @@ var _constants = require("../../config/constants");
 
 var _User = _interopRequireDefault(require("../../models/User"));
 
+var _verifyToken = require("../../middlewares/verifyToken");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
@@ -59,7 +61,8 @@ userRouter.post('/login', /*#__PURE__*/function () {
             _bcrypt.default.compare(req.body.password, user.hashed_password, function (err, result) {
               if (result) {
                 var token = generateAccessToken({
-                  username: req.body.username
+                  username: req.body.username,
+                  role: user.role
                 });
                 res.json(Object.assign(user, {
                   accessToken: token
@@ -131,8 +134,9 @@ userRouter.get('/', function (req, res) {
     };
   }());
 });
+userRouter.put('/', _verifyToken.verifyAdminToken);
 userRouter.put('/', function (req, res) {
-  _User.default.updateUser(req.body.id, req.body.name, req.body.money);
+  _User.default.updateUser(req.body.id, req.body.role, req.body.money);
 
   res.json(req.body.name);
 });

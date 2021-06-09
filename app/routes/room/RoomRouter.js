@@ -1,8 +1,11 @@
 import express from 'express';
 // import jwt from 'jsonwebtoken';
 import RoomModel from '../../models/Room';
+import { verifyAdminToken } from '../../middlewares/verifyToken';
 
 const roomRouter = express.Router();
+
+roomRouter.post('/', verifyAdminToken);
 
 roomRouter.post('/', async (req, res) => {
   try {
@@ -60,6 +63,8 @@ roomRouter.get('/', async(req, res) => {
   }
 });
 
+
+roomRouter.put('/:id', verifyAdminToken);
 roomRouter.put('/:id', async (req, res) => {
   try {
     const room = await RoomModel.updateRoom(req.params.id, {
@@ -79,10 +84,10 @@ roomRouter.put('/:id', async (req, res) => {
   }
 });
 
+roomRouter.delete('/:id', verifyAdminToken);
 roomRouter.delete('/:id', async (req, res) => {
   try {
     const room = await RoomModel.deleteRoom(req.params.id);
-
     res.status(200).json({
       status: 'success',
       room,

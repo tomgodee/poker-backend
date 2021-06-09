@@ -3,6 +3,7 @@ import jwt from 'jsonwebtoken';
 import bcrypt from 'bcrypt';
 import { SALT_ROUNDS } from '../../config/constants';
 import UserModel from '../../models/User';
+import { verifyAdminToken } from '../../middlewares/verifyToken';
 
 const userRouter = express.Router();
 
@@ -16,6 +17,7 @@ userRouter.post('/login', async (req, res) => {
     if (result) {
       const token = generateAccessToken({
         username: req.body.username,
+        role: user.role,
       });
       res.json(Object.assign(user, { accessToken: token }));
     } else {
@@ -42,8 +44,9 @@ userRouter.get('/', (req, res) => {
   });
 });
 
+userRouter.put('/', verifyAdminToken);
 userRouter.put('/', (req, res) => {
-  UserModel.updateUser(req.body.id, req.body.name, req.body.money);
+  UserModel.updateUser(req.body.id, req.body.role, req.body.money);
   res.json(req.body.name);
 });
 

@@ -61,9 +61,9 @@ var createUser = function createUser(name, hashedPassword) {
   });
 };
 
-var updateUser = function updateUser(id, name, money) {
-  return _DatabaseService.default.one("UPDATE public.user\n          SET name = $(name),\n              money = $(money)\n          WHERE id = $(id)\n          RETURNING name, id, money", {
-    name: name,
+var updateUser = function updateUser(id, role, money) {
+  return _DatabaseService.default.one("UPDATE public.user\n          SET role = $(role),\n              money = $(money)\n          WHERE id = $(id)\n          RETURNING name, role, id, money", {
+    role: role,
     id: id,
     money: money
   }).then(function (data) {

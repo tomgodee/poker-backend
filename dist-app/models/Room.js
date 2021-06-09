@@ -31,10 +31,7 @@ var getRoom = /*#__PURE__*/function () {
             }).then(function (data) {
               return data;
             }).catch(function (error) {
-              console.log('ERROR:', error); // print error;
-
-              // print error;
-              return error;
+              throw error;
             });
 
           case 2:
@@ -63,10 +60,7 @@ var getAllRoom = /*#__PURE__*/function () {
             return _DatabaseService.default.many("SELECT * FROM public.room").then(function (data) {
               return data;
             }).catch(function (error) {
-              console.log('ERROR:', error); // print error;
-
-              // print error;
-              return error;
+              throw error;
             });
 
           case 2:
@@ -89,7 +83,7 @@ var createRoom = function createRoom(roomData) {
   return _DatabaseService.default.one("\n    INSERT INTO public.room(type, max_number_of_player, random_seat, seat_selectable)\n    VALUES($1, $2, $3, $4)\n    RETURNING id", [roomData.type, roomData.max_number_of_player, roomData.random_seat, roomData.seat_selectable]).then(function (data) {
     return data;
   }).catch(function (error) {
-    console.log('ERROR:', error);
+    throw error;
   });
 };
 
@@ -100,7 +94,7 @@ var updateRoom = function updateRoom(id, roomData) {
   }).then(function (data) {
     return data;
   }).catch(function (error) {
-    console.log('ERROR:', error);
+    throw error;
   });
 };
 
@@ -110,7 +104,7 @@ var deleteRoom = function deleteRoom(id) {
   }).then(function (data) {
     return data;
   }).catch(function (error) {
-    console.log('ERROR:', error);
+    throw error;
   });
 };
 

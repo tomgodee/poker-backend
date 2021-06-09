@@ -21,13 +21,13 @@ const createUser = (name, hashedPassword) => {
     });
 }
 
-const updateUser = (id, name, money) => {
+const updateUser = (id, role, money) => {
   return db.one(`UPDATE public.user
-          SET name = $(name),
+          SET role = $(role),
               money = $(money)
           WHERE id = $(id)
-          RETURNING name, id, money`
-    , { name, id, money })
+          RETURNING name, role, id, money`
+    , { role, id, money })
     .then(data => {
       console.log(data);
       return data;

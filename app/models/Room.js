@@ -6,8 +6,7 @@ const getRoom = async (id) => {
       return data;
     })
     .catch(error => {
-      console.log('ERROR:', error); // print error;
-      return error;
+      throw error;
     });
 }
 
@@ -17,8 +16,7 @@ const getAllRoom = async () => {
     return data;
   })
   .catch(error => {
-    console.log('ERROR:', error); // print error;
-    return error;
+    throw error;
   });
 }
 
@@ -37,7 +35,7 @@ const createRoom = (roomData) => {
       return data;
     })
     .catch(error => {
-      console.log('ERROR:', error);
+      throw error;
     });
 }
 
@@ -54,7 +52,7 @@ const updateRoom = (id, roomData) => {
       return data;
     })
     .catch(error => {
-      console.log('ERROR:', error);
+      throw error;
     });
 }
 
@@ -67,7 +65,7 @@ const deleteRoom = (id) => {
       return data;
     })
     .catch(error => {
-      console.log('ERROR:', error);
+      throw error;
     });
 }
 

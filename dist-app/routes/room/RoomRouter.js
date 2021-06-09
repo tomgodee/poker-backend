@@ -15,6 +15,8 @@ var _express = _interopRequireDefault(require("express"));
 
 var _Room = _interopRequireDefault(require("../../models/Room"));
 
+var _verifyToken = require("../../middlewares/verifyToken");
+
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
 function asyncGeneratorStep(gen, resolve, reject, _next, _throw, key, arg) { try { var info = gen[key](arg); var value = info.value; } catch (error) { reject(error); return; } if (info.done) { resolve(value); } else { Promise.resolve(value).then(_next, _throw); } }
@@ -23,6 +25,7 @@ function _asyncToGenerator(fn) { return function () { var self = this, args = ar
 
 var roomRouter = _express.default.Router();
 
+roomRouter.post('/', _verifyToken.verifyAdminToken);
 roomRouter.post('/', /*#__PURE__*/function () {
   var _ref = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee(req, res) {
     var roomId;
@@ -151,6 +154,7 @@ roomRouter.get('/', /*#__PURE__*/function () {
     return _ref3.apply(this, arguments);
   };
 }());
+roomRouter.put('/:id', _verifyToken.verifyAdminToken);
 roomRouter.put('/:id', /*#__PURE__*/function () {
   var _ref4 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee4(req, res) {
     var room;
@@ -194,6 +198,7 @@ roomRouter.put('/:id', /*#__PURE__*/function () {
     return _ref4.apply(this, arguments);
   };
 }());
+roomRouter.delete('/:id', _verifyToken.verifyAdminToken);
 roomRouter.delete('/:id', /*#__PURE__*/function () {
   var _ref5 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee5(req, res) {
     var room;
