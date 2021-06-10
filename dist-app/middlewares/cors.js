@@ -3,20 +3,21 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = void 0;
+exports.default = exports.allowedOrigins = void 0;
 
 var _cors = _interopRequireDefault(require("cors"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var allowlist = ['http://localhost:3001', 'http://localhost:3002'];
+var allowedOrigins = ['http://localhost:3001', 'http://localhost:3002'];
+exports.allowedOrigins = allowedOrigins;
 
 var corsOptionsDelegate = function corsOptionsDelegate(req, callback) {
   var corsOptions;
 
-  if (allowlist.indexOf(req.header('Origin')) !== -1) {
+  if (allowedOrigins.indexOf(req.header('Origin')) !== -1) {
     corsOptions = {
-      origin: allowlist
+      origin: allowedOrigins
     };
   } else {
     corsOptions = {

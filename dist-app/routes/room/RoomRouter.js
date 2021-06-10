@@ -85,10 +85,7 @@ roomRouter.get('/:id', /*#__PURE__*/function () {
 
           case 3:
             room = _context2.sent;
-            res.json({
-              status: 'success',
-              room: room
-            });
+            res.status(200).json(room);
             _context2.next = 11;
             break;
 

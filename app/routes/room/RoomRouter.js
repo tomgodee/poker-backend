@@ -1,5 +1,4 @@
 import express from 'express';
-// import jwt from 'jsonwebtoken';
 import RoomModel from '../../models/Room';
 import { verifyAdminToken } from '../../middlewares/verifyToken';
 
@@ -32,11 +31,7 @@ roomRouter.post('/', async (req, res) => {
 roomRouter.get('/:id', async(req, res) => {
   try {
     const room = await RoomModel.getRoom(req.params.id);
-
-    res.json({
-      status: 'success',
-      room,
-    });
+    res.status(200).json(room);
   } catch (err) {
     console.log('ERROR: ', err);
     res.status(401).send({
@@ -49,7 +44,6 @@ roomRouter.get('/:id', async(req, res) => {
 roomRouter.get('/', async(req, res) => {
   try {
     const rooms = await RoomModel.getAllRoom();
-
     res.json({
       status: 'success',
       rooms,

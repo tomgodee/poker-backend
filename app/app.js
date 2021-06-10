@@ -7,8 +7,35 @@ import requestTime from './middlewares/requestTime';
 import userRouter from './routes/user/UserRouter';
 import pingRouter from './routes/ping/PingRouter';
 import roomRouter from './routes/room';
+import http from 'http';
+import io from 'socket.io';
+import { allowedOrigins } from './middlewares/cors';
 
 var app = express();
+
+const httpServer = http.createServer(app);
+const ioServer = io(httpServer, {
+  cors: {
+    origin: allowedOrigins,
+  }
+});
+
+ioServer.on("connection", (socket) => {
+  // console.log('socket', socket.id);
+  let room;
+  socket.on('join room', (data) => {
+    // console.log('User', data.username, 'joins room ', data.roomId);
+    room = `room ${data.roomId}`;1
+    socket.join(room);
+  });
+
+  socket.on('client sends message', (message, sendAcknowledgement) => {
+    ioServer.to(room).emit('server sends message', message);
+    sendAcknowledgement(message);
+  });
+});
+
+httpServer.listen(3000);
 
 // Default middlewares
 app.use(logger('dev'));

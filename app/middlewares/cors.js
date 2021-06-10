@@ -1,11 +1,12 @@
 import cors from 'cors';
 
-const allowlist = ['http://localhost:3001', 'http://localhost:3002']
+export const allowedOrigins = ['http://localhost:3001', 'http://localhost:3002']
+
 const corsOptionsDelegate = function (req, callback) {
   let corsOptions;
-  if (allowlist.indexOf(req.header('Origin')) !== -1) {
+  if (allowedOrigins.indexOf(req.header('Origin')) !== -1) {
     corsOptions = {
-      origin: allowlist,
+      origin: allowedOrigins,
     }
   } else {
     corsOptions = {
