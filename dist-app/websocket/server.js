@@ -82,7 +82,7 @@ var io = (0, _socket.default)(httpServer, {
         bet: number,
         hasActioned: boolean,
         actions: string[],
-        isAction: boolean,
+        isActing: boolean,
         role: string,
         cards: [{
           number: number,

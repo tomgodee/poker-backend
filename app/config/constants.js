@@ -37,6 +37,12 @@ export const PLAYER_STATUS = {
   SIT_OUT: 'sit out',
 }
 
+export const ROLES = {
+  SB :'SB',
+  BB: 'BB',
+  D: 'D',
+};
+
 export default {
   SALT_ROUNDS,
   VALUES,

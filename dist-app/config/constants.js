@@ -3,7 +3,7 @@
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.default = exports.PLAYER_STATUS = exports.ROUNDS = exports.SUITES = exports.VALUES = exports.SALT_ROUNDS = void 0;
+exports.default = exports.ROLES = exports.PLAYER_STATUS = exports.ROUNDS = exports.SUITES = exports.VALUES = exports.SALT_ROUNDS = void 0;
 var SALT_ROUNDS = 10;
 exports.SALT_ROUNDS = SALT_ROUNDS;
 var VALUES = {
@@ -43,6 +43,12 @@ var PLAYER_STATUS = {
   SIT_OUT: 'sit out'
 };
 exports.PLAYER_STATUS = PLAYER_STATUS;
+var ROLES = {
+  SB: 'SB',
+  BB: 'BB',
+  D: 'D'
+};
+exports.ROLES = ROLES;
 var _default = {
   SALT_ROUNDS: SALT_ROUNDS,
   VALUES: VALUES,

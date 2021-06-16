@@ -14,7 +14,7 @@ import {
   createDeck,
   shuffle,
 } from '../../utils/helpers';
-import { ROUNDS, PLAYER_STATUS } from '../../config/constants';
+import { ROUNDS, PLAYER_STATUS, ROLES } from '../../config/constants';
 
 const INIITAL_STATE = {
   players: [{
@@ -40,12 +40,6 @@ const INIITAL_STATE = {
   round: ROUNDS.PRE_FLOP,
 }
 
-const DEFAULT_ROLES = {
-  SB :'SB',
-  BB: 'BB',
-  D: 'D',
-};
-
 const getNextRoundName = (round) => {
   if (round === ROUNDS.PRE_FLOP) return ROUNDS.FLOP;
   if (round === ROUNDS.FLOP) return ROUNDS.TURN;
@@ -54,10 +48,13 @@ const getNextRoundName = (round) => {
 }
 
 const getNextPlayerToAction = (players, index) => {
-  const playersBehind = players.slice(0, index);
-  const playersAhead = players.slice(index);
-  const nextPlayer = playersAhead.find(player => !player.user.hasActioned) || playersBehind.find(player => !player.user.hasActioned);
-  return nextPlayer;
+  if (index === 0) {
+    return players.slice(1).find((player) => !player.user.hasActioned);
+  } else {
+    const playersBehind = players.slice(0, index);
+    const playersAhead = players.slice(index + 1);
+    return playersAhead.find((player) => !player.user.hasActioned) || playersBehind.find((player) => !player.user.hasActioned);
+  }
 }
 
 export default function roomHandler(io, socket, store) {
@@ -66,14 +63,20 @@ export default function roomHandler(io, socket, store) {
       player.user.bet = 0;
       player.user.hasActioned = false;
       player.user.actions = [CHECK, BET];
-      if (player.user.role === DEFAULT_ROLES.SB || player.user.role.includes(DEFAULT_ROLES.SB)) {
+      if (player.user.role === ROLES.SB || player.user.role.includes(ROLES.SB)) {
         player.user.isActing = true;
       }
     });
+
+    // Setup room
+    room.roundBet = 0;
+    room.round = ROUNDS.FLOP;
   
     // Deal public cards
     room.publicCards = room.deck.slice(0, 3);
     room.deck = room.deck.slice(3);
+    
+    store.rooms.set(data.roomId, room);
   
     io.to(data.roomId).emit(UPDATE_TABLE, {
       publicCards: room.publicCards,
@@ -81,12 +84,91 @@ export default function roomHandler(io, socket, store) {
       bigBlind: room.bigBlind,
       roundBet: 0,
       pot: room.pot,
+      round: room.round,
     });
   };
   
-  const setUpTurn = () => {};
-  const setUpRiver = () => {};
-  const setUpShowdown = () => {};
+  const setUpTurn = (room, data) => {
+    room.players.map((player) => {
+      player.user.bet = 0;
+      player.user.hasActioned = false;
+      player.user.actions = [CHECK, BET];
+      if (player.user.role === ROLES.SB || player.user.role.includes(ROLES.SB)) {
+        player.user.isActing = true;
+      }
+    });
+
+    room.roundBet = 0;
+    room.round = ROUNDS.TURN;
+  
+    // Deal public cards
+    room.publicCards = room.publicCards.concat(room.deck.slice(0, 1));
+    room.deck = room.deck.slice(1);
+  
+    store.rooms.set(data.roomId, room);
+
+    io.to(data.roomId).emit(UPDATE_TABLE, {
+      publicCards: room.publicCards,
+      players: room.players,
+      bigBlind: room.bigBlind,
+      roundBet: 0,
+      pot: room.pot,
+      round: room.round,
+    });
+  };
+
+  const setUpRiver = (room, data) => {
+    room.players.map((player) => {
+      player.user.bet = 0;
+      player.user.hasActioned = false;
+      player.user.actions = [CHECK, BET];
+      if (player.user.role === ROLES.SB || player.user.role.includes(ROLES.SB)) {
+        player.user.isActing = true;
+      }
+    });
+
+    room.round = ROUNDS.RIVER;
+    room.roundBet = 0;
+  
+    // Deal public cards
+    room.publicCards = room.publicCards.concat(room.deck.slice(0, 1));
+    room.deck = room.deck.slice(1);
+
+    store.rooms.set(data.roomId, room);
+  
+    io.to(data.roomId).emit(UPDATE_TABLE, {
+      publicCards: room.publicCards,
+      players: room.players,
+      bigBlind: room.bigBlind,
+      roundBet: 0,
+      pot: room.pot,
+      round: room.round,
+    });
+  };
+
+  const setUpShowdown = (room, data) => {
+    room.players.map((player) => {
+      player.user.bet = 0;
+      player.user.hasActioned = false;
+      player.user.actions = [];
+    });
+    true
+    store.rooms.set(data.roomId, room);
+    io.to(data.roomId).emit(UPDATE_TABLE, {
+      publicCards: room.publicCards,
+      players: room.players,
+      bigBlind: room.bigBlind,
+      roundBet: 0,
+      pot: room.pot,
+      round: room.round,
+    });
+
+    setTimeout(() => {
+      gameStart({
+        roomId: data.roomId,
+      }, true);
+    }, 2000);
+  };
   
   const setupTable = (room, data) => {
     if (room.round === ROUNDS.FLOP) setUpFlop(room, data);
@@ -96,7 +178,6 @@ export default function roomHandler(io, socket, store) {
   }
 
   const joinRoom = (data) => {
-    // console.log('data', data);
     socket.join(data.roomId);
     const room = store.rooms.get(data.roomId) || INIITAL_STATE;
     const isFirstPlayer = io.sockets.adapter.rooms.get(data.roomId).size < 2;
@@ -115,7 +196,7 @@ export default function roomHandler(io, socket, store) {
           isActing: false,
           role: '',
           cards: [],
-          status: '',
+          status: PLAYER_STATUS.PLAYING,
         }
       });
     } else {
@@ -146,31 +227,88 @@ export default function roomHandler(io, socket, store) {
     io.to(data.roomId).emit(UPDATE_PLAYERS, room.players);
   }
 
-  const gameStart = (data) => {
+  const gameStart = (data, continuous) => {
     const room = store.rooms.get(data.roomId)
     room.deck = shuffle(createDeck());
 
     // Assign role, compute money and bet for each player
-    if (room.players.length === 2) {
-      room.players[0].user.role = ['SB', 'D'];
-      room.players[0].user.bet = room.bigBlind / 2;
-      room.players[0].user.money -= room.bigBlind / 2;
-      room.players[0].user.actions = [CALL, BET, FOLD];
-      room.players[0].user.hasActioned = false;
-      room.players[0].user.isActing = true;
-      room.players[1].user.role = 'BB';
-      room.players[1].user.bet = room.bigBlind;
-      room.players[1].user.money -= room.bigBlind;
-      room.players[1].user.actions = [CHECK, BET];
-      room.players[1].user.hasActioned = false;
-      room.players[1].user.isActing = false;
+    if (continuous) {
+      if (room.players.length === 2) {
+        room.player = room.players.map((player) => {
+          
+          if (player.user.role.includes(ROLES.SB)) {
+            player.user.role = ROLES.BB;
+            player.user.bet = room.bigBlind;6
+            player.user.money -= room.bigBlind;
+            player.user.actions = [CHECK, BET];
+            player.user.hasActioned = false;
+            player.user.isActing = false;
+          } else if (player.user.role.includes(ROLES.BB)){
+            player.user.role = [ROLES.SB, ROLES.D];
+            player.user.bet = room.bigBlind / 2;
+            player.user.money -= room.bigBlind / 2;
+            player.user.actions = [CALL, BET, FOLD];
+            player.user.hasActioned = false;
+            player.user.isActing = true;
+          }
+          player.user.status = PLAYER_STATUS.PLAYING;
+          return player;
+        });
+      } else {
+        room.players = room.players.map((player, index, players) => {
+          player.user.hasActioned = false;
+          player.user.status = PLAYER_STATUS.PLAYING;
+          if (index === 0) {
+            player.user.role = players[players.length - 1].user.role;
+          } else {
+            player.user.role = players[index - 1].user.role;
+          }
+
+          if (player.user.role.includes(ROLES.SB)) {
+            player.user.bet = room.bigBlind / 2;
+            player.user.money -= room.bigBlind /2;
+          }
+          if (player.user.role.includes(ROLES.B)) {
+            player.user.bet = room.bigBlind;
+            player.user.money -= room.bigBlind;
+
+            if (index === 0) {
+              players[players.length - 1].user.isActing = true;
+              players[players.length - 1].user.actions = [CALL, BET, FOLD];
+            } else {
+              players[index + 1].user.isActing = true;
+              players[index + 1].user.actions = [CALL, BET, FOLD];
+            }
+          }
+          return player;
+        })
+      }
     } else {
-      room.players = room.players.map((player, index, players) => {
-        if (index === 0) player.user.role = 'SB';
-        if (index === 1) player.user.role = 'BB';
-        if (index === players.length - 1) player.user.role = 'D';
-        return player;
-      });
+      if (room.players.length === 2) {
+        room.players[0].user.role = [ROLES.SB, ROLES.D];
+        room.players[0].user.bet = room.bigBlind / 2;
+        room.players[0].user.money -= room.bigBlind / 2;
+        room.players[0].user.actions = [CALL, BET, FOLD];
+        room.players[0].user.hasActioned = false;
+        room.players[0].user.isActing = true;
+        room.players[0].user.status = PLAYER_STATUS.PLAYING;
+        room.players[1].user.role = ROLES.BB;
+        room.players[1].user.bet = room.bigBlind;
+        room.players[1].user.money -= room.bigBlind;
+        room.players[1].user.actions = [CHECK, BET];
+        room.players[1].user.hasActioned = false;
+        room.players[1].user.isActing = false;
+        room.players[1].user.isActing = false;
+        room.players[1].user.status = PLAYER_STATUS.PLAYING;
+      } else {
+        room.players = room.players.map((player, index, players) => {
+          if (index === 0) player.user.role = ROLES.SB;
+          if (index === 1) player.user.role = ROLES.BB;
+          if (index === players.length - 1) player.user.role = ROLES.D;
+          player.user.status = PLAYER_STATUS.PLAYING;
+          return player;
+        });
+      }
     }
 
     // Compute pot
@@ -194,7 +332,9 @@ export default function roomHandler(io, socket, store) {
         cardIndex = 1;
       }
     }
+  
     room.deck = room.deck.slice(numberOfCardDealt);
+    room.publicCards = [];
     room.round = ROUNDS.PRE_FLOP;
 
     // Save data to store
@@ -207,7 +347,6 @@ export default function roomHandler(io, socket, store) {
       roundBet: room.roundBet,
       pot: room.pot,
     });
-    // console.log('room', room);
   }
 
   const check = (data) => {
@@ -237,17 +376,34 @@ export default function roomHandler(io, socket, store) {
 
   const call = (data) => {
     const room = store.rooms.get(data.roomId);
-    room.players.map((player, index, players) => {
+    room.players = room.players.map((player) => {
       if (player.socketId === socket.id) {
-        player.user.money = data.currentPlayer.user.money - (room.roundBet - data.currentPlayer.user.bet);
-        room.pot += room.roundBet - data.currentPlayer.user.bet;
+        player.user.money -= data.calledMoney;
+        room.pot += data.calledMoney;
         player.user.bet = room.roundBet;
         player.user.hasActioned = true;
         player.user.isActing = false;
         player.user.status = PLAYER_STATUS.PLAYING;
-        players[index + 1].user.isActing = true;
       }
+      return player;
     });
+    const canGoToNextRound = every(room.players, (player) => {
+      return player.user.bet === room.roundBet && player.user.hasActioned;
+    });
+
+    if (canGoToNextRound) {
+      room.round = getNextRoundName(room.round);
+      setupTable(room, data);
+    } else {
+      const currentPlayerIndex = findIndex(room.players, ((player) => player.socketId === socket.id));
+      const nextPlayer = getNextPlayerToAction(room.players, currentPlayerIndex);
+      room.players = room.players.map((player, index, players) => {
+        if (player.socketId === nextPlayer.socketId) {
+          player.user.isActing = true;
+        }
+        return player;
+      });
+    }
 
     store.rooms.set(data.roomId, room);
 
@@ -262,24 +418,89 @@ export default function roomHandler(io, socket, store) {
 
   const bet = (data) => {
     const room = store.rooms.get(data.roomId);
-    const currentPlayerIndex = findIndex(room.players, ((player) => player.socketId === socket.id));
-    const nextPlayer = getNextPlayerToAction(room.players, currentPlayerIndex);
 
-    room.players.map((player) => {
-      if (nextPlayer.socketId === player.socketId) {
-        player.user.isActing = true;
-      }
+    room.players = room.players.map((player) => {
       if (player.socketId === socket.id) {
-        player.user.money -= data.betMoney;
+        room.pot = room.pot + (data.betMoney - player.user.bet);
+        player.user.money = player.user.money - (data.betMoney - player.user.bet);
         player.user.bet = data.betMoney;
-        room.pot += data.betMoney;
         player.user.hasActioned = true;
         player.user.isActing = false;
         player.user.status = PLAYER_STATUS.PLAYING;
       } else {
         player.user.hasActioned = false;
+        player.user.actions = [CALL, BET, FOLD];
       }
+      return player;
     });
+
+    const currentPlayerIndex = findIndex(room.players, ((player) => player.socketId === socket.id));
+    const nextPlayer = getNextPlayerToAction(room.players, currentPlayerIndex);
+
+    room.players = room.players.map((player) => {
+      if (nextPlayer.socketId === player.socketId) {
+        player.user.isActing = true;
+      }
+      return player;
+    });
+
+    room.roundBet = data.betMoney;
+    store.rooms.set(data.roomId, room);
+
+    io.to(data.roomId).emit(UPDATE_TABLE, {
+      publicCards: room.publicCards,
+      players: room.players,
+      bigBlind: room.bigBlind,
+      roundBet: room.roundBet,
+      pot: room.pot,
+    });
+  }
+
+  const fold = (data) => {
+    const room = store.rooms.get(data.roomId);
+
+    room.players = room.players.map((player) => {
+      if (player.socketId === socket.id) {
+        player.user.cards = [];
+        player.user.bet = 0;
+        player.user.actions = [];
+        player.user.hasActioned = true;
+        player.user.isActing = false;
+        player.user.status = PLAYER_STATUS.FOLD;
+      }
+      return player;
+    });
+
+    const winWithoutShowdown = room.players.filter((player) => {
+      return player.user.status === PLAYER_STATUS.PLAYING;
+    }).length === 1;
+    
+    if (winWithoutShowdown) {
+      // Award money to the winner
+      setTimeout(() => {
+        gameStart({
+          roomId: data.roomId,
+        }, true);
+      }, 2000);
+    } else {
+      const canGoToNextRound = every(room.players, (player) => {
+        return player.user.hasActioned;
+      });
+      if (canGoToNextRound) {
+        room.round = getNextRoundName(room.round);
+        setupTable(room, data);
+      } else {
+        const currentPlayerIndex = findIndex(room.players, ((player) => player.socketId === socket.id));
+        const nextPlayer = getNextPlayerToAction(room.players, currentPlayerIndex);
+    
+        room.players = room.players.map((player) => {
+          if (nextPlayer.socketId === player.socketId) {
+            player.user.isActing = true;
+          }
+          return player;
+        });
+      }
+    }
 
     store.rooms.set(data.roomId, room);
 
@@ -297,5 +518,5 @@ export default function roomHandler(io, socket, store) {
   socket.on(CHECK, check);
   socket.on(CALL, call);
   socket.on(BET, bet);
+  socket.on(FOLD, fold);
 }
-
