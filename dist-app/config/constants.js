@@ -7,7 +7,7 @@ exports.default = exports.ROLES = exports.PLAYER_STATUS = exports.ROUNDS = expor
 var SALT_ROUNDS = 10;
 exports.SALT_ROUNDS = SALT_ROUNDS;
 var VALUES = {
-  ACE: 1,
+  ACE: 14,
   TWO: 2,
   THREE: 3,
   FOUR: 4,

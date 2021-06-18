@@ -2,6 +2,22 @@
 
 require("core-js/modules/es.array.find-index.js");
 
+require("core-js/modules/es.symbol.js");
+
+require("core-js/modules/es.symbol.description.js");
+
+require("core-js/modules/es.object.to-string.js");
+
+require("core-js/modules/es.symbol.iterator.js");
+
+require("core-js/modules/es.array.iterator.js");
+
+require("core-js/modules/es.string.iterator.js");
+
+require("core-js/modules/web.dom-collections.iterator.js");
+
+require("core-js/modules/es.array.from.js");
+
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
@@ -13,11 +29,11 @@ require("core-js/modules/es.array.slice.js");
 
 require("core-js/modules/es.array.map.js");
 
+require("core-js/modules/es.array.concat.js");
+
 require("core-js/modules/es.array.includes.js");
 
 require("core-js/modules/es.string.includes.js");
-
-require("core-js/modules/es.array.concat.js");
 
 require("core-js/modules/es.array.join.js");
 
@@ -32,6 +48,20 @@ var _socketio = require("../../config/socketio");
 var _helpers = require("../../utils/helpers");
 
 var _constants = require("../../config/constants");
+
+var _phe = require("phe");
+
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _unsupportedIterableToArray(o, minLen) { if (!o) return; if (typeof o === "string") return _arrayLikeToArray(o, minLen); var n = Object.prototype.toString.call(o).slice(8, -1); if (n === "Object" && o.constructor) n = o.constructor.name; if (n === "Map" || n === "Set") return Array.from(o); if (n === "Arguments" || /^(?:Ui|I)nt(?:8|16|32)(?:Clamped)?Array$/.test(n)) return _arrayLikeToArray(o, minLen); }
+
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
+
+function _arrayLikeToArray(arr, len) { if (len == null || len > arr.length) len = arr.length; for (var i = 0, arr2 = new Array(len); i < len; i++) { arr2[i] = arr[i]; } return arr2; }
 
 var INIITAL_STATE = {
   players: [{
@@ -50,12 +80,15 @@ var INIITAL_STATE = {
     }
   }],
   deck: [],
-  publicCards: [],
+  communityCards: [],
   bigBlind: 200,
   roundBet: 0,
   pot: 0,
-  round: _constants.ROUNDS.PRE_FLOP
+  round: _constants.ROUNDS.PRE_FLOP,
+  bestHandStrength: 0,
+  winners: []
 };
+var TEXAS_HANDS = 5;
 
 var getNextRoundName = function getNextRoundName(round) {
   if (round === _constants.ROUNDS.PRE_FLOP) return _constants.ROUNDS.FLOP;
@@ -80,6 +113,76 @@ var getNextPlayerToAction = function getNextPlayerToAction(players, index) {
   }
 };
 
+var findAllCombinations = function findAllCombinations(array, combinationLength, result, startingIndex, user) {
+  if (combinationLength === 0) {
+    user.allPossibleHands.push(result);
+    return result;
+  }
+
+  for (var i = startingIndex; i < array.length && i - startingIndex <= TEXAS_HANDS; i += 1) {
+    var innerResult = _toConsumableArray(result);
+
+    innerResult.push(array[i]);
+    findAllCombinations(array, combinationLength - 1, innerResult, i + 1, user);
+  }
+};
+
+var transformCard = function transformCard(cards) {
+  return cards.map(function (card) {
+    var number, suite;
+
+    switch (card.number) {
+      case _constants.VALUES.ACE:
+        number = 'A';
+        break;
+
+      case _constants.VALUES.TEN:
+        number = 'T';
+        break;
+
+      case _constants.VALUES.JACK:
+        number = 'J';
+        break;
+
+      case _constants.VALUES.QUEEN:
+        number = 'Q';
+        break;
+
+      case _constants.VALUES.KING:
+        number = 'K';
+        break;
+
+      default:
+        number = String(card.number);
+        break;
+    }
+
+    switch (card.suite) {
+      case _constants.SUITES.HEARTS:
+        suite = 'h';
+        break;
+
+      case _constants.SUITES.DIAMONDS:
+        suite = 'd';
+        break;
+
+      case _constants.SUITES.CLUBS:
+        suite = 'c';
+        break;
+
+      case _constants.SUITES.SPADES:
+        suite = 's';
+        break;
+
+      default:
+        suite = 'h';
+        break;
+    }
+
+    return "".concat(number).concat(suite);
+  });
+};
+
 function roomHandler(io, socket, store) {
   var setUpFlop = function setUpFlop(room, data) {
     room.players.map(function (player) {
@@ -95,11 +198,11 @@ function roomHandler(io, socket, store) {
     room.roundBet = 0;
     room.round = _constants.ROUNDS.FLOP; // Deal public cards
 
-    room.publicCards = room.deck.slice(0, 3);
+    room.communityCards = room.deck.slice(0, 3);
     room.deck = room.deck.slice(3);
     store.rooms.set(data.roomId, room);
     io.to(data.roomId).emit(_socketio.UPDATE_TABLE, {
-      publicCards: room.publicCards,
+      communityCards: room.communityCards,
       players: room.players,
       bigBlind: room.bigBlind,
       roundBet: 0,
@@ -121,11 +224,11 @@ function roomHandler(io, socket, store) {
     room.roundBet = 0;
     room.round = _constants.ROUNDS.TURN; // Deal public cards
 
-    room.publicCards = room.publicCards.concat(room.deck.slice(0, 1));
+    room.communityCards = room.communityCards.concat(room.deck.slice(0, 1));
     room.deck = room.deck.slice(1);
     store.rooms.set(data.roomId, room);
     io.to(data.roomId).emit(_socketio.UPDATE_TABLE, {
-      publicCards: room.publicCards,
+      communityCards: room.communityCards,
       players: room.players,
       bigBlind: room.bigBlind,
       roundBet: 0,
@@ -135,23 +238,34 @@ function roomHandler(io, socket, store) {
   };
 
   var setUpRiver = function setUpRiver(room, data) {
-    room.players.map(function (player) {
+    // Room settings
+    room.round = _constants.ROUNDS.RIVER;
+    room.roundBet = 0; // Deal public cards
+
+    room.communityCards = room.communityCards.concat(room.deck.slice(0, 1));
+    room.deck = room.deck.slice(1); // Players settings
+
+    room.players = room.players.map(function (player) {
       player.user.bet = 0;
       player.user.hasActioned = false;
       player.user.actions = [_socketio.CHECK, _socketio.BET];
+      player.user.handStrength = (0, _phe.evaluateCards)(transformCard(player.user.cards.concat(room.communityCards)));
+
+      if (player.user.handStrength < room.bestHandStrength && player.user.status === _constants.PLAYER_STATUS.PLAYING) {
+        room.bestHandStrength = player.user.handStrength;
+      }
 
       if (player.user.role === _constants.ROLES.SB || player.user.role.includes(_constants.ROLES.SB)) {
         player.user.isActing = true;
       }
-    });
-    room.round = _constants.ROUNDS.RIVER;
-    room.roundBet = 0; // Deal public cards
 
-    room.publicCards = room.publicCards.concat(room.deck.slice(0, 1));
-    room.deck = room.deck.slice(1);
-    store.rooms.set(data.roomId, room);
+      return player;
+    }); // Save data to store
+
+    store.rooms.set(data.roomId, room); // Emit data to clients
+
     io.to(data.roomId).emit(_socketio.UPDATE_TABLE, {
-      publicCards: room.publicCards,
+      communityCards: room.communityCards,
       players: room.players,
       bigBlind: room.bigBlind,
       roundBet: 0,
@@ -161,15 +275,31 @@ function roomHandler(io, socket, store) {
   };
 
   var setUpShowdown = function setUpShowdown(room, data) {
-    room.players.map(function (player) {
+    room.players = room.players.map(function (player) {
       player.user.bet = 0;
       player.user.hasActioned = false;
       player.user.actions = [];
+
+      if (player.user.handStrength === room.bestHandStrength) {
+        player.user.isWinner = true;
+        room.winners.push(player.socketId);
+      } else {
+        player.user.isWinner = false;
+      }
+
+      return player;
     });
-    true;
+    var winningMoney = room.pot / room.winners.length;
+    room.players = room.players.map(function (player) {
+      if (player.user.isWinner) {
+        player.user.money += Math.floor(winningMoney);
+      }
+
+      return player;
+    });
     store.rooms.set(data.roomId, room);
     io.to(data.roomId).emit(_socketio.UPDATE_TABLE, {
-      publicCards: room.publicCards,
+      communityCards: room.communityCards,
       players: room.players,
       bigBlind: room.bigBlind,
       roundBet: 0,
@@ -209,6 +339,7 @@ function roomHandler(io, socket, store) {
           isActing: false,
           role: '',
           cards: [],
+          allPossibleHands: [],
           status: _constants.PLAYER_STATUS.PLAYING
         }
       });
@@ -234,6 +365,7 @@ function roomHandler(io, socket, store) {
           actions: [],
           role: '',
           cards: [],
+          allPossibleHands: [],
           status: ''
         }
       });
@@ -331,11 +463,17 @@ function roomHandler(io, socket, store) {
           return player;
         });
       }
-    } // Compute pot
+    } // Pot Settings
 
 
     room.roundBet = room.bigBlind;
-    room.pot = room.bigBlind * 1.5; // Deal cards to players
+    room.pot = room.bigBlind * 1.5;
+    room.winners = []; // Room settings
+    // https://github.com/HenryRLee/PokerHandEvaluator/blob/master/Documentation/Algorithm.md
+    // The worst hand possibly is 2-3-4-5 and 6-7 off suite results in a hand strength of 7462
+    // Need to investigate this number further
+
+    room.bestHandStrength = 7462; // Deal cards to players
     // cardIndex helps knowing the if it's the first dealing round or the second round
 
     var numberOfPlayers = room.players.length;
@@ -356,12 +494,13 @@ function roomHandler(io, socket, store) {
     }
 
     room.deck = room.deck.slice(numberOfCardDealt);
-    room.publicCards = [];
+    room.communityCards = [];
     room.round = _constants.ROUNDS.PRE_FLOP; // Save data to store
 
-    store.rooms.set(data.roomId, room);
+    store.rooms.set(data.roomId, room); // Emit data to clients
+
     io.to(data.roomId).emit(_socketio.UPDATE_TABLE, {
-      publicCards: room.publicCards,
+      communityCards: room.communityCards,
       players: room.players,
       bigBlind: room.bigBlind,
       roundBet: room.roundBet,
@@ -433,7 +572,7 @@ function roomHandler(io, socket, store) {
 
     store.rooms.set(data.roomId, room);
     io.to(data.roomId).emit(_socketio.UPDATE_TABLE, {
-      publicCards: room.publicCards,
+      communityCards: room.communityCards,
       players: room.players,
       bigBlind: room.bigBlind,
       roundBet: room.roundBet,
@@ -472,7 +611,7 @@ function roomHandler(io, socket, store) {
     room.roundBet = data.betMoney;
     store.rooms.set(data.roomId, room);
     io.to(data.roomId).emit(_socketio.UPDATE_TABLE, {
-      publicCards: room.publicCards,
+      communityCards: room.communityCards,
       players: room.players,
       bigBlind: room.bigBlind,
       roundBet: room.roundBet,
@@ -500,6 +639,13 @@ function roomHandler(io, socket, store) {
 
     if (winWithoutShowdown) {
       // Award money to the winner
+      room.players = room.players.map(function (player) {
+        if (player.user.status === _constants.PLAYER_STATUS.PLAYING) {
+          player.user.money += room.pot;
+        }
+
+        return player;
+      });
       setTimeout(function () {
         gameStart({
           roomId: data.roomId
@@ -530,7 +676,7 @@ function roomHandler(io, socket, store) {
 
     store.rooms.set(data.roomId, room);
     io.to(data.roomId).emit(_socketio.UPDATE_TABLE, {
-      publicCards: room.publicCards,
+      communityCards: room.communityCards,
       players: room.players,
       bigBlind: room.bigBlind,
       roundBet: room.roundBet,

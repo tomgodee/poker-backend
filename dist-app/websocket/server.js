@@ -88,15 +88,21 @@ var io = (0, _socket.default)(httpServer, {
           number: number,
           suite: string,
         }],
+        isWinner: boolean,
         status: string,
       }
       }],
     deck: string[],
-    publicCards: string[],
+    communityCards: [{
+      number: number,
+      suite: string,
+    }],
     bigBlind: number;
     roundBet: number;
     pot: number;
     round: string;
+    bestHandStrength: number;
+    winners: string[];
   }
 */
 

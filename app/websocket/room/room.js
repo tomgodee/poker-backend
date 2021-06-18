@@ -14,7 +14,8 @@ import {
   createDeck,
   shuffle,
 } from '../../utils/helpers';
-import { ROUNDS, PLAYER_STATUS, ROLES } from '../../config/constants';
+import { ROUNDS, PLAYER_STATUS, ROLES, VALUES, SUITES } from '../../config/constants';
+import { evaluateCards, evaluateBoard } from 'phe';
 
 const INIITAL_STATE = {
   players: [{
@@ -33,12 +34,16 @@ const INIITAL_STATE = {
     }
     }],
   deck: [],
-  publicCards: [],
+  communityCards: [],
   bigBlind: 200,
   roundBet: 0,
   pot: 0,
   round: ROUNDS.PRE_FLOP,
+  bestHandStrength: 0,
+  winners: [],
 }
+
+const TEXAS_HANDS = 5;
 
 const getNextRoundName = (round) => {
   if (round === ROUNDS.PRE_FLOP) return ROUNDS.FLOP;
@@ -57,6 +62,62 @@ const getNextPlayerToAction = (players, index) => {
   }
 }
 
+const findAllCombinations = (array, combinationLength, result, startingIndex, user) => {
+  if (combinationLength === 0) {
+    user.allPossibleHands.push(result);
+    return result;
+  }
+  for (let i = startingIndex; i < array.length && i - startingIndex <= TEXAS_HANDS; i += 1) {
+    const innerResult = [...result];
+    innerResult.push(array[i]);
+    findAllCombinations(array, combinationLength - 1, innerResult, i + 1, user);
+  }
+};
+
+const transformCard = (cards) => {
+  return cards.map((card) => {
+    let number, suite;
+    switch (card.number) {
+      case VALUES.ACE:
+        number = 'A';
+        break;
+      case VALUES.TEN:
+        number = 'T';
+        break;
+      case VALUES.JACK:
+        number = 'J';
+        break;
+      case VALUES.QUEEN:
+        number = 'Q';
+        break;
+      case VALUES.KING:
+        number = 'K';
+        break;
+      default:
+        number = String(card.number);
+        break;
+    }
+    switch (card.suite) {
+      case SUITES.HEARTS:
+        suite = 'h';
+        break;
+      case SUITES.DIAMONDS:
+        suite = 'd';
+        break;
+      case SUITES.CLUBS:
+        suite = 'c';
+        break;
+      case SUITES.SPADES:
+        suite = 's';
+        break;
+      default:
+        suite = 'h';
+        break;
+    }
+    return `${number}${suite}`;
+  });
+}
+
 export default function roomHandler(io, socket, store) {
   const setUpFlop = (room, data) => {
     room.players.map((player) => {
@@ -73,13 +134,13 @@ export default function roomHandler(io, socket, store) {
     room.round = ROUNDS.FLOP;
   
     // Deal public cards
-    room.publicCards = room.deck.slice(0, 3);
+    room.communityCards = room.deck.slice(0, 3);
     room.deck = room.deck.slice(3);
     
     store.rooms.set(data.roomId, room);
   
     io.to(data.roomId).emit(UPDATE_TABLE, {
-      publicCards: room.publicCards,
+      communityCards: room.communityCards,
       players: room.players,
       bigBlind: room.bigBlind,
       roundBet: 0,
@@ -102,13 +163,13 @@ export default function roomHandler(io, socket, store) {
     room.round = ROUNDS.TURN;
   
     // Deal public cards
-    room.publicCards = room.publicCards.concat(room.deck.slice(0, 1));
+    room.communityCards = room.communityCards.concat(room.deck.slice(0, 1));
     room.deck = room.deck.slice(1);
   
     store.rooms.set(data.roomId, room);
 
     io.to(data.roomId).emit(UPDATE_TABLE, {
-      publicCards: room.publicCards,
+      communityCards: room.communityCards,
       players: room.players,
       bigBlind: room.bigBlind,
       roundBet: 0,
@@ -118,26 +179,37 @@ export default function roomHandler(io, socket, store) {
   };
 
   const setUpRiver = (room, data) => {
-    room.players.map((player) => {
-      player.user.bet = 0;
-      player.user.hasActioned = false;
-      player.user.actions = [CHECK, BET];
-      if (player.user.role === ROLES.SB || player.user.role.includes(ROLES.SB)) {
-        player.user.isActing = true;
-      }
-    });
-
+    // Room settings
     room.round = ROUNDS.RIVER;
     room.roundBet = 0;
   
     // Deal public cards
-    room.publicCards = room.publicCards.concat(room.deck.slice(0, 1));
+    room.communityCards = room.communityCards.concat(room.deck.slice(0, 1));
     room.deck = room.deck.slice(1);
 
+    // Players settings
+    room.players = room.players.map((player) => {
+      player.user.bet = 0;
+      player.user.hasActioned = false;
+      player.user.actions = [CHECK, BET];
+      player.user.handStrength = evaluateCards(transformCard(player.user.cards.concat(room.communityCards)));
+
+      if (player.user.handStrength < room.bestHandStrength && player.user.status === PLAYER_STATUS.PLAYING) {
+        room.bestHandStrength = player.user.handStrength;
+      }
+
+      if (player.user.role === ROLES.SB || player.user.role.includes(ROLES.SB)) {
+        player.user.isActing = true;
+      }
+      return player;
+    });
+
+    // Save data to store
     store.rooms.set(data.roomId, room);
   
+    // Emit data to clients
     io.to(data.roomId).emit(UPDATE_TABLE, {
-      publicCards: room.publicCards,
+      communityCards: room.communityCards,
       players: room.players,
       bigBlind: room.bigBlind,
       roundBet: 0,
@@ -147,15 +219,30 @@ export default function roomHandler(io, socket, store) {
   };
 
   const setUpShowdown = (room, data) => {
-    room.players.map((player) => {
+    room.players = room.players.map((player) => {
       player.user.bet = 0;
       player.user.hasActioned = false;
       player.user.actions = [];
+      if (player.user.handStrength === room.bestHandStrength) {
+        player.user.isWinner = true;
+        room.winners.push(player.socketId);
+      } else {
+        player.user.isWinner = false;
+      }
+      return player;
     });
-    true
+
+    const winningMoney = room.pot / room.winners.length;
+    room.players = room.players.map((player) => {
+      if (player.user.isWinner) {
+        player.user.money += Math.floor(winningMoney);
+      }
+      return player;
+    });
     store.rooms.set(data.roomId, room);
+
     io.to(data.roomId).emit(UPDATE_TABLE, {
-      publicCards: room.publicCards,
+      communityCards: room.communityCards,
       players: room.players,
       bigBlind: room.bigBlind,
       roundBet: 0,
@@ -196,6 +283,7 @@ export default function roomHandler(io, socket, store) {
           isActing: false,
           role: '',
           cards: [],
+          allPossibleHands: [],
           status: PLAYER_STATUS.PLAYING,
         }
       });
@@ -217,6 +305,7 @@ export default function roomHandler(io, socket, store) {
           actions: [],
           role: '',
           cards: [],
+          allPossibleHands: [],
           status: '',
         }
       });
@@ -311,10 +400,16 @@ export default function roomHandler(io, socket, store) {
       }
     }
 
-    // Compute pot
+    // Pot Settings
     room.roundBet = room.bigBlind;
     room.pot = room.bigBlind * 1.5;
+    room.winners = [];
 
+    // Room settings
+    // https://github.com/HenryRLee/PokerHandEvaluator/blob/master/Documentation/Algorithm.md
+    // The worst hand possibly is 2-3-4-5 and 6-7 off suite results in a hand strength of 7462
+    // Need to investigate this number further
+    room.bestHandStrength = 7462;
 
     // Deal cards to players
     // cardIndex helps knowing the if it's the first dealing round or the second round
@@ -334,14 +429,15 @@ export default function roomHandler(io, socket, store) {
     }
   
     room.deck = room.deck.slice(numberOfCardDealt);
-    room.publicCards = [];
+    room.communityCards = [];
     room.round = ROUNDS.PRE_FLOP;
 
     // Save data to store
     store.rooms.set(data.roomId, room)
 
+    // Emit data to clients
     io.to(data.roomId).emit(UPDATE_TABLE, {
-      publicCards: room.publicCards,
+      communityCards: room.communityCards,
       players: room.players,
       bigBlind: room.bigBlind,
       roundBet: room.roundBet,
@@ -408,7 +504,7 @@ export default function roomHandler(io, socket, store) {
     store.rooms.set(data.roomId, room);
 
     io.to(data.roomId).emit(UPDATE_TABLE, {
-      publicCards: room.publicCards,
+      communityCards: room.communityCards,
       players: room.players,
       bigBlind: room.bigBlind,
       roundBet: room.roundBet,
@@ -448,7 +544,7 @@ export default function roomHandler(io, socket, store) {
     store.rooms.set(data.roomId, room);
 
     io.to(data.roomId).emit(UPDATE_TABLE, {
-      publicCards: room.publicCards,
+      communityCards: room.communityCards,
       players: room.players,
       bigBlind: room.bigBlind,
       roundBet: room.roundBet,
@@ -477,6 +573,12 @@ export default function roomHandler(io, socket, store) {
     
     if (winWithoutShowdown) {
       // Award money to the winner
+      room.players = room.players.map((player) => {
+        if (player.user.status === PLAYER_STATUS.PLAYING) {
+          player.user.money += room.pot;
+        }
+        return player;
+      });
       setTimeout(() => {
         gameStart({
           roomId: data.roomId,
@@ -505,7 +607,7 @@ export default function roomHandler(io, socket, store) {
     store.rooms.set(data.roomId, room);
 
     io.to(data.roomId).emit(UPDATE_TABLE, {
-      publicCards: room.publicCards,
+      communityCards: room.communityCards,
       players: room.players,
       bigBlind: room.bigBlind,
       roundBet: room.roundBet,
