@@ -26,8 +26,23 @@ const updateUser = (id, role, money) => {
           SET role = $(role),
               money = $(money)
           WHERE id = $(id)
-          RETURNING name, role, id, money`
-    , { role, id, money })
+          RETURNING id, name, role, money`
+    , { id, role, money })
+    .then(data => {
+      console.log(data);
+      return data;
+    })
+    .catch(error => {
+      console.log('ERROR:', error);
+    });
+}
+
+const updateMoneyByName = (name, money) => {
+  return db.one(`UPDATE public.user
+          SET money = $(money)
+          WHERE name = $(name)
+          RETURNING id, name, role, money`
+    , { name, money })
     .then(data => {
       console.log(data);
       return data;
@@ -41,4 +56,5 @@ export default {
   getUser,
   createUser,
   updateUser,
+  updateMoneyByName,
 };

@@ -78,7 +78,8 @@ var io = (0, _socket.default)(httpServer, {
       user: {
         seat: number,
         name: string,
-        money: number,
+        currentMoney: number,
+        totalMoney: number,
         bet: number,
         hasActioned: boolean,
         actions: string[],
@@ -98,11 +99,17 @@ var io = (0, _socket.default)(httpServer, {
       suite: string,
     }],
     bigBlind: number;
-    roundBet: number;
-    pot: number;
     round: string;
-    bestHandStrength: number;
-    winners: string[];
+    roundBet: number;
+    pots: [{
+      id: number;
+      amount: number;
+      limit: number;
+      bestHandStrength: number;
+      winners: string[];
+      excludedPlayers: string[];
+      sidePot: boolean;
+    }];
   }
 */
 

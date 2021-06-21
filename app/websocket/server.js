@@ -26,7 +26,8 @@ const io = socketio(httpServer, {
       user: {
         seat: number,
         name: string,
-        money: number,
+        currentMoney: number,
+        totalMoney: number,
         bet: number,
         hasActioned: boolean,
         actions: string[],
@@ -46,11 +47,17 @@ const io = socketio(httpServer, {
       suite: string,
     }],
     bigBlind: number;
-    roundBet: number;
-    pot: number;
     round: string;
-    bestHandStrength: number;
-    winners: string[];
+    roundBet: number;
+    pots: [{
+      id: number;
+      amount: number;
+      limit: number;
+      bestHandStrength: number;
+      winners: string[];
+      excludedPlayers: string[];
+      sidePot: boolean;
+    }];
   }
 */
 var store = {

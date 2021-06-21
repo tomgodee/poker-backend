@@ -23,11 +23,23 @@ require("core-js/modules/es.array.from.js");
 Object.defineProperty(exports, "__esModule", {
   value: true
 });
-exports.shuffle = exports.createDeck = exports.randomElement = void 0;
+exports.transformCard = exports.findAllCombinations = exports.shuffle = exports.createDeck = exports.randomElement = void 0;
 
 require("core-js/modules/es.object.entries.js");
 
+require("core-js/modules/es.array.map.js");
+
+require("core-js/modules/es.array.concat.js");
+
 var _constants = require("../config/constants");
+
+function _toConsumableArray(arr) { return _arrayWithoutHoles(arr) || _iterableToArray(arr) || _unsupportedIterableToArray(arr) || _nonIterableSpread(); }
+
+function _nonIterableSpread() { throw new TypeError("Invalid attempt to spread non-iterable instance.\nIn order to be iterable, non-array objects must have a [Symbol.iterator]() method."); }
+
+function _iterableToArray(iter) { if (typeof Symbol !== "undefined" && iter[Symbol.iterator] != null || iter["@@iterator"] != null) return Array.from(iter); }
+
+function _arrayWithoutHoles(arr) { if (Array.isArray(arr)) return _arrayLikeToArray(arr); }
 
 function _slicedToArray(arr, i) { return _arrayWithHoles(arr) || _iterableToArrayLimit(arr, i) || _unsupportedIterableToArray(arr, i) || _nonIterableRest(); }
 
@@ -90,3 +102,77 @@ var shuffle = function shuffle(array) {
 };
 
 exports.shuffle = shuffle;
+
+var findAllCombinations = function findAllCombinations(array, combinationLength, result, startingIndex, user) {
+  if (combinationLength === 0) {
+    user.allPossibleHands.push(result);
+    return result;
+  }
+
+  for (var i = startingIndex; i < array.length && i - startingIndex <= _constants.TEXAS_HANDS; i += 1) {
+    var innerResult = _toConsumableArray(result);
+
+    innerResult.push(array[i]);
+    findAllCombinations(array, combinationLength - 1, innerResult, i + 1, user);
+  }
+};
+
+exports.findAllCombinations = findAllCombinations;
+
+var transformCard = function transformCard(cards) {
+  return cards.map(function (card) {
+    var number, suite;
+
+    switch (card.number) {
+      case _constants.VALUES.ACE:
+        number = 'A';
+        break;
+
+      case _constants.VALUES.TEN:
+        number = 'T';
+        break;
+
+      case _constants.VALUES.JACK:
+        number = 'J';
+        break;
+
+      case _constants.VALUES.QUEEN:
+        number = 'Q';
+        break;
+
+      case _constants.VALUES.KING:
+        number = 'K';
+        break;
+
+      default:
+        number = String(card.number);
+        break;
+    }
+
+    switch (card.suite) {
+      case _constants.SUITES.HEARTS:
+        suite = 'h';
+        break;
+
+      case _constants.SUITES.DIAMONDS:
+        suite = 'd';
+        break;
+
+      case _constants.SUITES.CLUBS:
+        suite = 'c';
+        break;
+
+      case _constants.SUITES.SPADES:
+        suite = 's';
+        break;
+
+      default:
+        suite = 'h';
+        break;
+    }
+
+    return "".concat(number).concat(suite);
+  });
+};
+
+exports.transformCard = transformCard;

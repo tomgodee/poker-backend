@@ -45,8 +45,8 @@ userRouter.get('/', (req, res) => {
 });
 
 userRouter.put('/', verifyAdminToken);
-userRouter.put('/', (req, res) => {
-  UserModel.updateUser(req.body.id, req.body.role, req.body.money);
+userRouter.put('/', async (req, res) => {
+  await UserModel.updateUser(req.body.id, req.body.role, req.body.money);
   res.json(req.body.name);
 });
 

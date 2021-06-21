@@ -62,9 +62,21 @@ var createUser = function createUser(name, hashedPassword) {
 };
 
 var updateUser = function updateUser(id, role, money) {
-  return _DatabaseService.default.one("UPDATE public.user\n          SET role = $(role),\n              money = $(money)\n          WHERE id = $(id)\n          RETURNING name, role, id, money", {
-    role: role,
+  return _DatabaseService.default.one("UPDATE public.user\n          SET role = $(role),\n              money = $(money)\n          WHERE id = $(id)\n          RETURNING id, name, role, money", {
     id: id,
+    role: role,
+    money: money
+  }).then(function (data) {
+    console.log(data);
+    return data;
+  }).catch(function (error) {
+    console.log('ERROR:', error);
+  });
+};
+
+var updateMoneyByName = function updateMoneyByName(name, money) {
+  return _DatabaseService.default.one("UPDATE public.user\n          SET money = $(money)\n          WHERE name = $(name)\n          RETURNING id, name, role, money", {
+    name: name,
     money: money
   }).then(function (data) {
     console.log(data);
@@ -77,6 +89,7 @@ var updateUser = function updateUser(id, role, money) {
 var _default = {
   getUser: getUser,
   createUser: createUser,
-  updateUser: updateUser
+  updateUser: updateUser,
+  updateMoneyByName: updateMoneyByName
 };
 exports.default = _default;

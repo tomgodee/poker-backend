@@ -135,11 +135,30 @@ userRouter.get('/', function (req, res) {
   }());
 });
 userRouter.put('/', _verifyToken.verifyAdminToken);
-userRouter.put('/', function (req, res) {
-  _User.default.updateUser(req.body.id, req.body.role, req.body.money);
+userRouter.put('/', /*#__PURE__*/function () {
+  var _ref3 = _asyncToGenerator( /*#__PURE__*/regeneratorRuntime.mark(function _callee3(req, res) {
+    return regeneratorRuntime.wrap(function _callee3$(_context3) {
+      while (1) {
+        switch (_context3.prev = _context3.next) {
+          case 0:
+            _context3.next = 2;
+            return _User.default.updateUser(req.body.id, req.body.role, req.body.money);
 
-  res.json(req.body.name);
-});
+          case 2:
+            res.json(req.body.name);
+
+          case 3:
+          case "end":
+            return _context3.stop();
+        }
+      }
+    }, _callee3);
+  }));
+
+  return function (_x5, _x6) {
+    return _ref3.apply(this, arguments);
+  };
+}());
 userRouter.post('/', function (req, res) {
   _bcrypt.default.hash(req.body.password, _constants.SALT_ROUNDS, function (err, hash) {
     // Store hash in your password DB.
