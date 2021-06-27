@@ -623,7 +623,15 @@ export default function roomHandler(io, socket, store) {
     }
 
     // Pot Settings
-    room.pots = [DEFAULT_POT];
+    room.pots = [{
+      id: 1,
+      amount: 300,
+      bestHandStrength: DEFAULT_BEST_HAND_STRENGTH,
+      limit: 0,
+      winners: [],
+      sidePot: false,
+      excludedPlayers: [],
+    }];
     room.roundBet = room.bigBlind;
     room.deck = shuffle(createDeck());
     room.communityCards = [];
@@ -644,6 +652,7 @@ export default function roomHandler(io, socket, store) {
       players: room.players,
       bigBlind: room.bigBlind,
       roundBet: room.roundBet,
+      round: room.round,
       pots: room.pots,
     });
   }

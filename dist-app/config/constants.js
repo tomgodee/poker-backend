@@ -76,7 +76,7 @@ var DEFAULT_PLAYER = {
 exports.DEFAULT_PLAYER = DEFAULT_PLAYER;
 var DEFAULT_POT = {
   id: 1,
-  amount: 0,
+  amount: 300,
   bestHandStrength: DEFAULT_BEST_HAND_STRENGTH,
   limit: 0,
   winners: [],
