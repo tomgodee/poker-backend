@@ -9,7 +9,7 @@ var _cors = _interopRequireDefault(require("cors"));
 
 function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-var allowedOrigins = ['http://localhost:3001', 'http://localhost:3002'];
+var allowedOrigins = ['http://localhost:3001', 'http://localhost:3002', 'http://tom-poker-frontend.s3-website-ap-southeast-1.amazonaws.com'];
 exports.allowedOrigins = allowedOrigins;
 
 var corsOptionsDelegate = function corsOptionsDelegate(req, callback) {

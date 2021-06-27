@@ -1,6 +1,6 @@
 import cors from 'cors';
 
-export const allowedOrigins = ['http://localhost:3001', 'http://localhost:3002']
+export const allowedOrigins = ['http://localhost:3001', 'http://localhost:3002', 'http://tom-poker-frontend.s3-website-ap-southeast-1.amazonaws.com']
 
 const corsOptionsDelegate = function (req, callback) {
   let corsOptions;
