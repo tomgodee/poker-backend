@@ -73,6 +73,7 @@ To use async/await syntax with babel v7:
 Primary key should be serial => how to alter an integer column to serial tho ???
 
 Deploy to Heroku:
+  - https://devcenter.heroku.com/articles/deploying-nodejs
   - Create an account
   - Download Heroku CLI
   - Specify the nodejs version that this app runs in package.json
@@ -81,4 +82,24 @@ Deploy to Heroku:
       "node": "14.x"
     },
     ```
-  - 
+  - To run heroku on local: 
+    - heroku local web
+  - To deploy:
+    - heroku login
+    - heroku create (this will create a random named app)
+    - git push heroku ${CURRENT_BRANCH}
+
+  - To provision a database: https://devcenter.heroku.com/articles/heroku-postgresql#provisioning-heroku-postgres
+  - To check addons:
+    - heroku addons
+    - heroku addons:create heroku-postgresql:hobby-dev
+
+  - pg:push wont work
+  - To dump the local db to an sql file named tom.sql:
+    - sudo pg_dump -U postgres -h localhost [DBNAME](tom) -f [FILE_NAME](tom).sql 
+    - put in the password for the postgres user (in my case it's zxc321)
+  - To restore the heroku db based on an .sql file
+    - heroku pg:psql --app [APP_NAME](intense-bastion-63272) < [FILE_NAME](tom).sql 
+
+  - To connect to heroku's postgres then we need to provide an ssl and allow self-signed certificate
+    - https://www.javaniceday.com/post/pg-promise-self-signed-certificate-error-in-postgres

@@ -1,4 +1,7 @@
 import pgp from 'pg-promise';
-const db = pgp()('postgres://postgres:zxc321@localhost:5432/tom');
-
+const db = pgp()({
+  connectionString: process.env.DATABASE_URL,
+  max: 30,
+  ssl: {rejectUnauthorized: false},
+});
 export default db;
