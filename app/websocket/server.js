@@ -1,17 +1,11 @@
-import { MESSAGE_SENT, JOIN_ROOM } from '../config/socketio';
-import express from 'express';
-import http from 'http';
-import socketio from 'socket.io';
+import { Server } from 'socket.io';
 import { allowedOrigins } from '../middlewares/cors';
 import roomHandler from './room';
 import chatHandler from './chat';
 import { UPDATE_PLAYERS } from '../config/socketio';
+import httpServer from '../app';
 
-var app = express();
-
-const httpServer = http.createServer(app);
-
-const io = socketio(httpServer, {
+const io = new Server(httpServer, {
   cors: {
     origin: allowedOrigins,
   }
@@ -81,6 +75,4 @@ const onConnection = (socket) => {
 
 io.on("connection", onConnection);
 
-export {
-  httpServer,
-}; 
+export default httpServer;

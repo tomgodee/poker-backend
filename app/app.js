@@ -1,5 +1,6 @@
 import express from 'express';
 import path from 'path';
+import http from 'http';
 import cors from './middlewares/cors';
 import cookieParser from 'cookie-parser';
 import logger from 'morgan';
@@ -7,11 +8,8 @@ import requestTime from './middlewares/requestTime';
 import userRouter from './routes/user/UserRouter';
 import pingRouter from './routes/ping/PingRouter';
 import roomRouter from './routes/room';
-import { httpServer as socketServer } from './websocket/server';
 var app = express();
-
-// Websocket server
-socketServer.listen(3000);
+const httpServer = http.createServer(app);
 
 // Http server
 // Default middlewares
@@ -40,4 +38,4 @@ app.use('/ping', pingRouter);
 app.use('/user', userRouter);
 app.use('/room', roomRouter);
 
-export default app;
+export default httpServer;

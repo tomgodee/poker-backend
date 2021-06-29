@@ -7,22 +7,22 @@
 // var app = require('../app.mjs');
 // var http = require('http');
 
-import app from '../app';
+import server from '../websocket/server';
 import debugLib from 'debug';
-import http from 'http';
+
 var debug = debugLib('poker-backend:server');
 /**
  * Get port from environment and store in Express.
  */
 
 var port = normalizePort(process.env.PORT || '2000');
-app.set('port', port);
+// app.set('port', port);
 
 /**
  * Create HTTP server.
  */
 
-var server = http.createServer(app);
+// var server = http.createServer(app);
 
 /**
  * Listen on provided port, on all network interfaces.
