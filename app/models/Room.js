@@ -10,7 +10,7 @@ const getRoom = async (id) => {
     });
 }
 
-const getAllRoom = async () => {
+const getAllRooms = async () => {
   return await db.many(`SELECT * FROM public.room`)
   .then(data => {
     return data;
@@ -71,7 +71,7 @@ const deleteRoom = (id) => {
 
 export default {
   getRoom,
-  getAllRoom,
+  getAllRooms,
   createRoom,
   updateRoom,
   deleteRoom,

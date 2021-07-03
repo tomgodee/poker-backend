@@ -43,7 +43,7 @@ roomRouter.get('/:id', async(req, res) => {
 
 roomRouter.get('/', async(req, res) => {
   try {
-    const rooms = await RoomModel.getAllRoom();
+    const rooms = await RoomModel.getAllRooms();
     res.json({
       status: 'success',
       rooms,

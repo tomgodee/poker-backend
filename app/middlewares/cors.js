@@ -1,6 +1,7 @@
 import cors from 'cors';
 
-export const allowedOrigins = ['http://192.168.1.2:3001', 'http://localhost:3001', 'http://localhost:3002', 'http://tom-poker-frontend.s3-website-ap-southeast-1.amazonaws.com']
+// Origin must not have a slash / at the end or else it won't work
+export const allowedOrigins = ['https://d2s10as78akinj.cloudfront.net', 'http://localhost:3001', 'http://localhost:3002', 'http://tom-poker-frontend.s3-website-ap-southeast-1.amazonaws.com']
 
 const corsOptionsDelegate = function (req, callback) {
   let corsOptions;
