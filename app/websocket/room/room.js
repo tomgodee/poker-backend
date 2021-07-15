@@ -537,7 +537,7 @@ export default function roomHandler(io, socket, store) {
     if (room.round === ROUNDS.SHOWDOWN) setUpShowdown(room, data);
   }
 
-  const joinRoom = (data) => {
+  const joinRoom = (data, updateMoneyCallback) => {
     socket.join(data.roomId);
     const room = store.rooms.get(data.roomId) || DEFAULT_ROOM;
     const isFirstPlayer = io.sockets.adapter.rooms.get(data.roomId).size < 2;
@@ -548,16 +548,16 @@ export default function roomHandler(io, socket, store) {
         socketId: socket.id,
         user: {
           seat: 1,
+          id: data.user.id,
           name: data.user.name,
           currentMoney: data.user.currentMoney,
-          totalMoney: data.user.currentMoney,
+          totalMoney: data.user.totalMoney,
           bet: 0,
           hasActioned: false,
           actions: [],
           isActing: false,
           role: '',
           cards: [],
-          allPossibleHands: [],
           status: PLAYER_STATUS.PLAYING,
         }
       });
@@ -572,16 +572,16 @@ export default function roomHandler(io, socket, store) {
         socketId: socket.id,
         user: {
           seat: data.random_seat ? randomElement(availableSeats) : Math.min(availableSeats),
+          id: data.user.id,
           name: data.user.name,
           currentMoney: data.user.currentMoney,
-          totalMoney: data.user.currentMoney,
+          totalMoney: data.user.totalMoney,
           bet: 0,
           hasActioned: false,
           isActing: false,
           actions: [],
           role: '',
           cards: [],
-          allPossibleHands: [],
           status: PLAYER_STATUS.PLAYING,
         }
       });
@@ -589,6 +589,7 @@ export default function roomHandler(io, socket, store) {
       room.players.sort(bySeat);
     }
 
+    updateMoneyCallback();
     store.rooms.set(data.roomId, room);
     io.to(data.roomId).emit(UPDATE_PLAYERS, room.players);
   }

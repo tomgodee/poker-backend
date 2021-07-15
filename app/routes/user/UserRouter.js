@@ -50,6 +50,15 @@ userRouter.put('/', async (req, res) => {
   res.json(req.body.name);
 });
 
+userRouter.put('/money', async (req, res) => {
+  try {
+    const user = await UserModel.updateMoneyByID(req.body.id, req.body.money);
+    res.json(user);
+  } catch (err) {
+    res.status(401).send(err);
+  }
+});
+
 userRouter.post('/', (req, res) => {
   bcrypt.hash(req.body.password, SALT_ROUNDS, (err, hash) => {
     // Store hash in your password DB.

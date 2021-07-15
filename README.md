@@ -25,7 +25,10 @@ To exit the psql cmd:
 
 pgadmin master password: anTrust302
 
-connecting to pgServer1 server: zxc321
+pgServer1 server user: postgres
+pgServer1 server password: zxc321
+
+Connect to local db: postgres://postgres:zxc321@localhost:5432/tom
 
 Email for using pgadmin on web:
   - trungvu8295@gmail.com ----- zxc321
