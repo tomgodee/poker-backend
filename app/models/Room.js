@@ -11,7 +11,7 @@ const getRoom = async (id) => {
 }
 
 const getAllRooms = async () => {
-  return await db.many(`SELECT * FROM public.room`)
+  return await db.any(`SELECT * FROM public.room`)
   .then(data => {
     return data;
   })

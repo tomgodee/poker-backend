@@ -1,6 +1,6 @@
 import db from '../services/DatabaseService';
 
-const getUser = async (name) => {
+const getOneByName = async (name) => {
   return await db.one(`SELECT * FROM public.user WHERE name = $(name)`, { name })
     .then(data => {
       return data;
@@ -9,19 +9,31 @@ const getUser = async (name) => {
       console.log('ERROR:', error); // print error;
       return error;
     });
-}
+};
 
-const createUser = (name, hashedPassword) => {
+const getOneByID = async (id) => {
+  return await db.one(`SELECT * FROM public.user WHERE id = $(id)`, { id })
+    .then(data => {
+      return data;
+    })
+    .catch(error => {
+      console.log('ERROR:', error); // print error;
+      throw error;
+    });
+};
+
+const createOne = (name, hashedPassword) => {
   return db.one('INSERT INTO public.user(name, hashed_password) VALUES($1, $2) RETURNING id', [name, hashedPassword])
     .then(data => {
       return data;
     })
     .catch(error => {
       console.log('ERROR:', error); // print error;
+      throw error;
     });
-}
+};
 
-const updateUser = (id, role, money) => {
+const update = (id, role, money) => {
   return db.one(`UPDATE public.user
           SET role = $(role),
               money = $(money)
@@ -34,7 +46,7 @@ const updateUser = (id, role, money) => {
     .catch(error => {
       console.log('ERROR:', error);
     });
-}
+};
 
 const updateMoneyByID = (id, money) => {
   return db.one(`UPDATE public.user
@@ -48,7 +60,7 @@ const updateMoneyByID = (id, money) => {
     .catch(error => {
       console.log('ERROR:', error);
     });
-}
+};
 
 const updateMoneyByName = (name, money) => {
   return db.one(`UPDATE public.user
@@ -62,12 +74,13 @@ const updateMoneyByName = (name, money) => {
     .catch(error => {
       console.log('ERROR:', error);
     });
-}
+};
 
 export default {
-  getUser,
-  createUser,
-  updateUser,
+  getOneByName,
+  getOneByID,
+  createOne,
+  update,
   updateMoneyByID,
   updateMoneyByName,
 };
