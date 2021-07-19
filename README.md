@@ -1,5 +1,10 @@
-To run:
-  - npm run watch:dev
+To run (this will run nodemon which inside it runs clean, transpile, build and finally starts the server)
+  - npm run watch
+
+Preload the config with (from the dotenv docs)
+```
+-r dotenv/config
+```
 
 On how to install postgres and pgadmin:
   - https://www.youtube.com/watch?v=lX9uMCSqqko
@@ -106,3 +111,53 @@ Deploy to Heroku:
 
   - To connect to heroku's postgres then we need to provide an ssl and allow self-signed certificate
     - https://www.javaniceday.com/post/pg-promise-self-signed-certificate-error-in-postgres
+
+  - Deployment to AWS
+    - Create a VPC => this will also create a route table
+    - Create a subnet
+    - Create an internet gateway(IGW) and attach it to a VPC
+    - Go the the route table and add the route for IGW with the destination to be 0.0.0.0/0
+    - Create an ec-2 instance
+      - Choose to give the instance a public ipv4
+    - Add inbound rule for the subnet
+    - SSH into the instance
+      - Install nodejs v12:
+        ```
+        curl -sL https://rpm.nodesource.com/setup_10.x | sudo bash -
+        sudo yum install nodejs
+        ```
+      - Check the version of node and npm:
+        ```
+        node -v
+        npm -v
+        ```
+      - Install git and check its version:
+        ```
+        sudo yum install git
+        git --version
+        ```
+      - Clone the project and run
+      - Send request to http(s)://ipv4:${PORT}
+
+    - This guide does pretty the above: 
+      - https://ourcodeworld.com/articles/read/977/how-to-deploy-a-node-js-application-on-aws-ec2-server
+
+    - Use pm2 to daemonize the server
+      - https://pm2.keymetrics.io/docs/usage/application-declaration/
+      - To create config file:
+      ```
+      npx pm2 ecosystem
+      ```
+      - Read https://pm2.keymetrics.io/docs/usage/environment/, I needed to change the name of the app in the config file based on the name in list
+
+      - To run:
+      ```
+      npm run start:pm
+      ```
+      - And then to inject env variables
+      ```
+      npm run config:pm
+      ```
+
+      - Online dashboard:
+        -  https://app.pm2.io/bucket/60f59aabc1adc9642a9de198/backend/overview/servers
