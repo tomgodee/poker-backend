@@ -1,6 +1,6 @@
 import express from 'express';
 import path from 'path';
-import http from 'http';
+import https from 'https';
 import cors from './middlewares/cors';
 import cookieParser from 'cookie-parser';
 import logger from 'morgan';
@@ -8,8 +8,16 @@ import requestTime from './middlewares/requestTime';
 import userRouter from './routes/user/UserRouter';
 import pingRouter from './routes/ping/PingRouter';
 import roomRouter from './routes/room';
+import fs from 'fs';
 var app = express();
-const httpServer = http.createServer(app);
+
+// This line is from the Node.js HTTPS documentation.
+var options = {
+  key: fs.readFileSync('../keys/tom-key.pem'),
+  cert: fs.readFileSync('../keys/tom-cert.cert')
+};
+
+const httpServer = https.createServer(options, app);
 
 // Http server
 // Default middlewares
