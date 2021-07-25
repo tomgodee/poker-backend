@@ -28,6 +28,14 @@ To see the list of users in cmd:
 To exit the psql cmd:
   - \q
 
+To check the postgresql version: 
+  - Log in access postgres in cmd and then
+  - `SELECT version()`
+  - mine is currently 13.3
+
+Or simply type in cmd:
+  - `psql -V`
+
 pgadmin master password: anTrust302
 
 pgServer1 server user: postgres
@@ -161,3 +169,12 @@ Deploy to Heroku:
 
       - Online dashboard:
         -  https://app.pm2.io/bucket/60f59aabc1adc9642a9de198/backend/overview/servers
+
+      - Create a subnet group
+      - Create an RDS
+        - Create subnet group
+        - Config security group for RDS (VPC, subnets ...)
+        - Info about my RDS:
+          - DB name: tom
+          - User: postgres ----- zxcv3210
+      - Connect to RDS

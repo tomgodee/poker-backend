@@ -16,10 +16,11 @@
     "watch": "nodemon",
     "start:pm2": "pm2 start ./dist-app/bin/www.js",
     "config:pm2": "pm2 start ecosystem.config.js",
-    "reload:pm2": "pm2 reload ./dist-app/bin/www.js",
+    "reload:pm2": "pm2 reload ./dist-app/bin/www.js --update-env",
     "stop:pm2": "pm2 stop ./dist-app/bin/www.js",
     "delete:pm2": "pm2 delete ./dist-app/bin/www.js",
-    "status:pm2": "pm2 status"
+    "status:pm2": "pm2 status",
+    "log:pm2": "pm2 monit"
   },
   "dependencies": {
     "@babel/cli": "^7.14.3",
